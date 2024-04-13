@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math"
+	"log"
 	"time"
 
 	"github.com/gotk3/gotk3/gtk"
@@ -28,7 +28,6 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 		return
 	}
 
-	//win.Window, err = gtk.ApplicationWindowNew(app.GtkApplication)
 	win.Window, err = getUIObject[gtk.ApplicationWindow](builder, "window")
     if err != nil {
 		err = fmt.Errorf("Couldn't create application window: %s", err)
@@ -76,54 +75,72 @@ func getPostUI(post lemmy.PostView) (postUI gtk.IWidget, err error) {
 		return
 	}
 
+	setWidgetProperty(builder, "title", func(label *gtk.Label) { label.SetText(post.Post.Name) })
+	setWidgetProperty(builder, "description", func(label *gtk.Label) { label.SetText(post.Post.Body.ValueOrZero()) })
+	setWidgetProperty(builder, "communityName", func(label *gtk.Label) { label.SetText(post.Community.Title) })
+	setWidgetProperty(builder, "username", func(label *gtk.Label) {
+		if post.Creator.DisplayName.IsValid() {
+			label.SetText(post.Creator.DisplayName.ValueOrZero())
+		} else {
+			label.SetText(post.Creator.Name)
+		}
+	})
+	setWidgetProperty(builder, "time", func(label *gtk.Label) { label.SetText(fmt.Sprintf("%s ago", time.Since(post.Post.Published).Round(time.Minute).String())) })
+	setWidgetProperty(builder, "votes", func(spinner *gtk.SpinButton) {
+		spinner.SetValue(float64(post.Counts.Score))
+		spinner.SetRange(spinner.GetValue()-1, spinner.GetValue()+1)
+		spinner.SetIncrements(1, 1)
+	})
+	setWidgetProperty(builder, "comments", func(button *gtk.Button) { button.SetLabel(fmt.Sprintf("%d comments", post.Counts.Comments)) })
+
 	postUI, err = getUIObject[gtk.Box](builder, "post")
 	if err != nil {
 		return
 	}
 
-	title, err := getUIObject[gtk.Label](builder, "title")
+	/*if post.Post.URL.IsValid() {
+		stringURL := post.Post.URL.ValueOrZero()
+		res, err := http.Get(stringURL)
+		if err != nil {
+			log.Printf("Error downloading image '%s': %s", stringURL, err)
+		} else {
+			defer res.Body.Close()
+			log.Printf("%s\n%s:%d", post.Post.Name, stringURL, res.ContentLength)
+
+			image, err := getUIObject[gtk.Image](builder, "image")
+			if err != nil {
+				log.Println(err)
+			} else {
+				partialData := make([]byte, 128)
+				data := make([]byte, 0)
+				for ; err == nil; {
+					_, err = res.Body.Read(partialData)
+					data = append(data, partialData...)
+				}
+				if err != nil && err.Error() != "EOF" {
+					log.Panicf("Error reading response body: %s", err)
+				}
+				loader, err := gdk.PixbufLoaderNew()
+				if err != nil {
+					log.Panic(err)
+				}
+				pixbuf, err := loader.WriteAndReturnPixbuf(data)
+				if err != nil {
+					log.Panicf("Couldn't load image: %s", err)
+				}
+				image.SetFromPixbuf(pixbuf)
+			}
+		}
+	}*/
+	return
+}
+
+func setWidgetProperty[WType any](builder *gtk.Builder, widgetId string, setter func(widget *WType)) (err error) {
+	widget, err := getUIObject[WType](builder, widgetId)
 	if err != nil {
+		log.Printf("Couldn't set property of '%s'", widgetId)
 		return
 	}
-	title.SetText(post.Post.Name)
-
-	description, err := getUIObject[gtk.Label](builder, "description")
-	if err != nil {
-		return
-	}
-	description.SetText(post.Post.Body.ValueOrZero())
-
-	community, err := getUIObject[gtk.Label](builder, "communityName")
-	if err != nil {
-		return
-	}
-	community.SetText(post.Community.Name)
-
-	username, err := getUIObject[gtk.Label](builder, "username")
-	if err != nil {
-		return
-	}
-	username.SetText(post.Creator.Name)
-
-	timeUI, err := getUIObject[gtk.Label](builder, "time")
-	if err != nil {
-		return
-	}
-	timeUI.SetText(fmt.Sprintf("%s ago", time.Since(post.Post.Published).Round(time.Minute).String()))
-
-	votes, err := getUIObject[gtk.SpinButton](builder, "votes")
-	if err != nil {
-		return
-	}
-	votes.SetValue(float64(post.Counts.Score))
-	votes.SetRange(math.Max(votes.GetValue()-1, 0), votes.GetValue()+1)
-	votes.SetIncrements(1, 1)
-
-	comments, err := getUIObject[gtk.Button](builder, "comments")
-	if err != nil {
-		return
-	}
-	comments.SetLabel(fmt.Sprintf("%d comments", post.Counts.Comments))
-
+	setter(widget)
 	return
 }
