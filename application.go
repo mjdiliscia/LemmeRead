@@ -75,7 +75,9 @@ func (app *Application) LoginLemmyClient(user, pass, totp string) (err error) {
 }
 
 func (app *Application) PostsLemmyClient() (post []lemmy.PostView, err error) {
-	response, err := app.LemmyClient.Posts(app.LemmyContext, lemmy.GetPosts{})
+	response, err := app.LemmyClient.Posts(app.LemmyContext, lemmy.GetPosts{
+		Type: lemmy.NewOptional(lemmy.ListingTypeSubscribed),
+	})
 	if err != nil {
 		return
 	}

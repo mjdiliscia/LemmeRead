@@ -107,9 +107,9 @@ func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
 		label.SetText(fmt.Sprintf("%s ago", time.Since(post.Post.Published).Round(time.Minute).String()))
 	})
 	setWidgetProperty(builder, "votes", func(spinner *gtk.SpinButton) {
-		spinner.SetValue(float64(post.Counts.Score))
-		spinner.SetRange(spinner.GetValue()-1, spinner.GetValue()+1)
+		spinner.SetRange(float64(post.Counts.Score)-1, float64(post.Counts.Score)+1)
 		spinner.SetIncrements(1, 1)
+		spinner.SetValue(float64(post.Counts.Score))
 	})
 	setWidgetProperty(builder, "comments", func(button *gtk.Button) { button.SetLabel(fmt.Sprintf("%d comments", post.Counts.Comments)) })
 
