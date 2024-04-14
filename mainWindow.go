@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"time"
 
 	"github.com/gotk3/gotk3/gdk"
@@ -11,7 +12,12 @@ import (
 	"go.elara.ws/go-lemmy"
 )
 
-const applicationTitle = "Lemme Read"
+const (
+	applicationTitle = "Lemme Read"
+	maxPostImageSize = 400.0
+	minWindowWidth   = 500.0
+	minWindowHeight  = 600.0
+)
 
 type MainWindow struct {
 	Window *gtk.ApplicationWindow
@@ -30,20 +36,41 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 	}
 
 	win.Window, err = getUIObject[gtk.ApplicationWindow](builder, "window")
-    if err != nil {
+	if err != nil {
 		err = fmt.Errorf("Couldn't create application window: %s", err)
 		return
-    }
+	}
 
 	win.Window.SetApplication(app.GtkApplication)
-    win.Window.SetTitle(applicationTitle)
+	win.Window.SetTitle(applicationTitle)
+	win.Window.SetSizeRequest(minWindowWidth, minWindowHeight)
+
+	scrolledWindow, err := gtk.ScrolledWindowNew(nil, nil)
+	if err != nil {
+		err = fmt.Errorf("Couldn't make a scrolled window: %s", err)
+		return
+	}
+	win.Window.Add(scrolledWindow)
+
+	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 5)
+	if err != nil {
+		err = fmt.Errorf("Couldn't make a vertical box: %s", err)
+	}
+	scrolledWindow.Add(vbox)
 
 	postsData, err := app.PostsLemmyClient()
 	if err != nil {
 		return
 	}
-	postUI, err := getPostUI(postsData[0])
-	win.Window.Add(postUI)
+
+	for _, post := range postsData {
+		log.Println(post.Post.Name)
+		postUI, _ := getPostUI(post)
+		vbox.PackStart(postUI, true, true, 0)
+	}
+
+	scrolledWindow.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+	win.Window.ShowAll()
 
 	return win, nil
 }
@@ -61,12 +88,12 @@ func getUIObject[OType any](builder *gtk.Builder, objectId string) (object *OTyp
 	}
 }
 
-func getPostUI(post lemmy.PostView) (postUI gtk.IWidget, err error) {
+func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
 	var (
 		builder *gtk.Builder
 	)
 
-	builder, err = gtk.BuilderNewFromString(ui.PostUI)
+	builder, err = gtk.BuilderNewFromString(string(ui.PostUI))
 	if err != nil {
 		return
 	}
@@ -81,7 +108,9 @@ func getPostUI(post lemmy.PostView) (postUI gtk.IWidget, err error) {
 			label.SetText(post.Creator.Name)
 		}
 	})
-	setWidgetProperty(builder, "time", func(label *gtk.Label) { label.SetText(fmt.Sprintf("%s ago", time.Since(post.Post.Published).Round(time.Minute).String())) })
+	setWidgetProperty(builder, "time", func(label *gtk.Label) {
+		label.SetText(fmt.Sprintf("%s ago", time.Since(post.Post.Published).Round(time.Minute).String()))
+	})
 	setWidgetProperty(builder, "votes", func(spinner *gtk.SpinButton) {
 		spinner.SetValue(float64(post.Counts.Score))
 		spinner.SetRange(spinner.GetValue()-1, spinner.GetValue()+1)
@@ -89,59 +118,36 @@ func getPostUI(post lemmy.PostView) (postUI gtk.IWidget, err error) {
 	})
 	setWidgetProperty(builder, "comments", func(button *gtk.Button) { button.SetLabel(fmt.Sprintf("%d comments", post.Counts.Comments)) })
 
+	if post.Post.URL.IsValid() {
+		LoadImageFromURL(post.Post.URL.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
+			SetPostImage(builder, pixbuf, err)
+		})
+	}
+
 	postUI, err = getUIObject[gtk.Box](builder, "post")
+	postUI.Unparent()
+
+	return
+}
+
+func SetPostImage(builder *gtk.Builder, pixbuf *gdk.Pixbuf, err error) {
 	if err != nil {
 		return
 	}
 
-	if post.Post.URL.IsValid() {
-		LoadImageFromURL(post.Post.URL.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
-			if err != nil {
-				return
-			}
-
-			image, err := getUIObject[gtk.Image](builder, "image")
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			image.SetFromPixbuf(pixbuf)
-		})
+	imageHeight := float64(pixbuf.GetHeight())
+	imageWidth := float64(pixbuf.GetWidth())
+	if imageHeight > maxPostImageSize || imageWidth > maxPostImageSize {
+		scale := maxPostImageSize / math.Max(imageHeight, imageWidth)
+		pixbuf, _ = pixbuf.ScaleSimple(int(imageWidth*scale), int(imageHeight*scale), gdk.INTERP_HYPER)
 	}
-	/* stringURL := post.Post.URL.ValueOrZero()
-		res, err := http.Get(stringURL)
-		if err != nil {
-			log.Printf("Error downloading image '%s': %s", stringURL, err)
-		} else {
-			defer res.Body.Close()
-			log.Printf("%s\n%s:%d", post.Post.Name, stringURL, res.ContentLength)
 
-			image, err := getUIObject[gtk.Image](builder, "image")
-			if err != nil {
-				log.Println(err)
-			} else {
-				partialData := make([]byte, 128)
-				data := make([]byte, 0)
-				for ; err == nil; {
-					_, err = res.Body.Read(partialData)
-					data = append(data, partialData...)
-				}
-				if err != nil && err.Error() != "EOF" {
-					log.Panicf("Error reading response body: %s", err)
-				}
-				loader, err := gdk.PixbufLoaderNew()
-				if err != nil {
-					log.Panic(err)
-				}
-				pixbuf, err := loader.WriteAndReturnPixbuf(data)
-				if err != nil {
-					log.Panicf("Couldn't load image: %s", err)
-				}
-				image.SetFromPixbuf(pixbuf)
-			}
-		}
-	}*/
-	return
+	image, err := getUIObject[gtk.Image](builder, "image")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	image.SetFromPixbuf(pixbuf)
 }
 
 func setWidgetProperty[WType any](builder *gtk.Builder, widgetId string, setter func(widget *WType)) (err error) {
