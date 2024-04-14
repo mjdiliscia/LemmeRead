@@ -14,9 +14,8 @@ import (
 
 const (
 	applicationTitle = "Lemme Read"
-	maxPostImageSize = 400.0
-	minWindowWidth   = 500.0
-	minWindowHeight  = 600.0
+	maxPostImageSize = 400
+	communityIconSize = 30
 )
 
 type MainWindow struct {
@@ -29,7 +28,7 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 		return
 	}
 
-	builder, err := gtk.BuilderNewFromString(ui.MainWindowUI)
+	builder, err := gtk.BuilderNewFromString(string(ui.MainWindowUI))
 	if err != nil {
 		err = fmt.Errorf("Couldn't make the main window builder: %s", err)
 		return
@@ -40,23 +39,12 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 		err = fmt.Errorf("Couldn't create application window: %s", err)
 		return
 	}
-
 	win.Window.SetApplication(app.GtkApplication)
-	win.Window.SetTitle(applicationTitle)
-	win.Window.SetSizeRequest(minWindowWidth, minWindowHeight)
 
-	scrolledWindow, err := gtk.ScrolledWindowNew(nil, nil)
+	vbox, err := getUIObject[gtk.Box](builder, "postContainer")
 	if err != nil {
-		err = fmt.Errorf("Couldn't make a scrolled window: %s", err)
-		return
+		err = fmt.Errorf("Couldn't find the vertical box: %s", err)
 	}
-	win.Window.Add(scrolledWindow)
-
-	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 5)
-	if err != nil {
-		err = fmt.Errorf("Couldn't make a vertical box: %s", err)
-	}
-	scrolledWindow.Add(vbox)
 
 	postsData, err := app.PostsLemmyClient()
 	if err != nil {
@@ -64,14 +52,11 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 	}
 
 	for _, post := range postsData {
-		log.Println(post.Post.Name)
 		postUI, _ := getPostUI(post)
 		vbox.PackStart(postUI, true, true, 0)
 	}
 
-	scrolledWindow.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-	win.Window.ShowAll()
-
+	win.Window.Show()
 	return win, nil
 }
 
@@ -99,8 +84,18 @@ func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
 	}
 
 	setWidgetProperty(builder, "title", func(label *gtk.Label) { label.SetText(post.Post.Name) })
-	setWidgetProperty(builder, "description", func(label *gtk.Label) { label.SetText(post.Post.Body.ValueOrZero()) })
-	setWidgetProperty(builder, "communityName", func(label *gtk.Label) { label.SetText(post.Community.Title) })
+	setWidgetProperty(builder, "description", func(textView *gtk.TextView) {
+		if post.Post.Body.IsValid() {
+			buffer, _ := textView.GetBuffer()
+			buffer.SetText(post.Post.Body.ValueOrZero())
+		} else {
+			textView.Hide()
+		}
+	})
+	setWidgetProperty(builder, "communityName", func(label *gtk.Label) {
+		label.SetText(fmt.Sprintf("<span size=\"large\">%s</span>", post.Community.Title))
+		label.SetUseMarkup(true)
+	})
 	setWidgetProperty(builder, "username", func(label *gtk.Label) {
 		if post.Creator.DisplayName.IsValid() {
 			label.SetText(post.Creator.DisplayName.ValueOrZero())
@@ -120,7 +115,13 @@ func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
 
 	if post.Post.URL.IsValid() {
 		LoadImageFromURL(post.Post.URL.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
-			SetPostImage(builder, pixbuf, err)
+			setImage(builder, pixbuf, "image", [2]int{maxPostImageSize, maxPostImageSize}, err)
+		})
+	}
+
+	if post.Community.Icon.IsValid() {
+		LoadImageFromURL(post.Community.Icon.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
+			setImage(builder, pixbuf, "communityIcon", [2]int{communityIconSize, communityIconSize}, err)
 		})
 	}
 
@@ -130,24 +131,29 @@ func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
 	return
 }
 
-func SetPostImage(builder *gtk.Builder, pixbuf *gdk.Pixbuf, err error) {
+func setImage(builder *gtk.Builder, pixbuf *gdk.Pixbuf, imageId string, maxSize [2]int, err error) {
 	if err != nil {
 		return
 	}
 
-	imageHeight := float64(pixbuf.GetHeight())
 	imageWidth := float64(pixbuf.GetWidth())
-	if imageHeight > maxPostImageSize || imageWidth > maxPostImageSize {
-		scale := maxPostImageSize / math.Max(imageHeight, imageWidth)
-		pixbuf, _ = pixbuf.ScaleSimple(int(imageWidth*scale), int(imageHeight*scale), gdk.INTERP_HYPER)
+	imageWidthScale := imageWidth / float64(maxSize[0])
+	imageHeight := float64(pixbuf.GetHeight())
+	imageHeightScale := imageHeight / float64(maxSize[1])
+
+	if  imageWidthScale > 1.0 || imageHeightScale > 1.0 {
+		scale := math.Max(imageWidthScale, imageHeightScale)
+		pixbuf, _ = pixbuf.ScaleSimple(int(imageWidth / scale), int(imageHeight / scale), gdk.INTERP_HYPER)
 	}
 
-	image, err := getUIObject[gtk.Image](builder, "image")
+	image, err := getUIObject[gtk.Image](builder, imageId)
 	if err != nil {
 		log.Println(err)
 		return
 	}
+
 	image.SetFromPixbuf(pixbuf)
+	image.Show()
 }
 
 func setWidgetProperty[WType any](builder *gtk.Builder, widgetId string, setter func(widget *WType)) (err error) {
