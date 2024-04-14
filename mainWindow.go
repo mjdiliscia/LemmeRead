@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/mjdiliscia/LemmeRead/ui"
 	"go.elara.ws/go-lemmy"
@@ -36,11 +37,6 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 
 	win.Window.SetApplication(app.GtkApplication)
     win.Window.SetTitle(applicationTitle)
-
-	builder, err = gtk.BuilderNewFromString(ui.PostUI)
-	if err != nil {
-		return
-	}
 
 	postsData, err := app.PostsLemmyClient()
 	if err != nil {
@@ -98,8 +94,21 @@ func getPostUI(post lemmy.PostView) (postUI gtk.IWidget, err error) {
 		return
 	}
 
-	/*if post.Post.URL.IsValid() {
-		stringURL := post.Post.URL.ValueOrZero()
+	if post.Post.URL.IsValid() {
+		LoadImageFromURL(post.Post.URL.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
+			if err != nil {
+				return
+			}
+
+			image, err := getUIObject[gtk.Image](builder, "image")
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			image.SetFromPixbuf(pixbuf)
+		})
+	}
+	/* stringURL := post.Post.URL.ValueOrZero()
 		res, err := http.Get(stringURL)
 		if err != nil {
 			log.Printf("Error downloading image '%s': %s", stringURL, err)
