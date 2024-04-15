@@ -113,9 +113,16 @@ func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
 	})
 	setWidgetProperty(builder, "comments", func(button *gtk.Button) { button.SetLabel(fmt.Sprintf("%d comments", post.Counts.Comments)) })
 
-	if post.Post.URL.IsValid() {
-		LoadImageFromURL(post.Post.URL.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
+	if post.Post.ThumbnailURL.IsValid() {
+		LoadImageFromURL(post.Post.ThumbnailURL.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
 			setImage(builder, pixbuf, "image", [2]int{maxPostImageSize, maxPostImageSize}, err)
+		})
+	}
+
+	if post.Post.URL.IsValid() && (!post.Post.ThumbnailURL.IsValid() || post.Post.URL.ValueOrZero() != post.Post.ThumbnailURL.ValueOrZero()){
+		setWidgetProperty(builder, "linkButton", func(link *gtk.LinkButton) {
+			link.SetUri(post.Post.URL.ValueOrZero())
+			link.Show()
 		})
 	}
 
