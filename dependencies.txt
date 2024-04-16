@@ -1,0 +1,4 @@
+golang
+gtk3-devel
+cairo-devel
+glib-devel
