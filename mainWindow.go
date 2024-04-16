@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"math"
+	//"os"
+	//"strings"
 	"time"
 
 	"github.com/gotk3/gotk3/gdk"
@@ -13,8 +15,8 @@ import (
 )
 
 const (
-	applicationTitle = "Lemme Read"
-	maxPostImageSize = 400
+	applicationTitle  = "Lemme Read"
+	maxPostImageSize  = 580
 	communityIconSize = 30
 )
 
@@ -53,7 +55,8 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 
 	for _, post := range postsData {
 		postUI, _ := getPostUI(post)
-		vbox.PackStart(postUI, true, true, 0)
+		convertToCard(postUI)
+		vbox.PackStart(postUI, false, false, 0)
 	}
 
 	win.Window.Show()
@@ -88,8 +91,11 @@ func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
 		if post.Post.Body.IsValid() {
 			buffer, _ := textView.GetBuffer()
 			buffer.SetText(post.Post.Body.ValueOrZero())
-		} else {
-			textView.Hide()
+		}
+	})
+	setWidgetProperty(builder, "descriptionScroll", func(scroll *gtk.ScrolledWindow) {
+		if !post.Post.Body.IsValid() {
+			scroll.Hide()
 		}
 	})
 	setWidgetProperty(builder, "communityName", func(label *gtk.Label) {
@@ -119,7 +125,7 @@ func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
 		})
 	}
 
-	if post.Post.URL.IsValid() && (!post.Post.ThumbnailURL.IsValid() || post.Post.URL.ValueOrZero() != post.Post.ThumbnailURL.ValueOrZero()){
+	if post.Post.URL.IsValid() && (!post.Post.ThumbnailURL.IsValid() || post.Post.URL.ValueOrZero() != post.Post.ThumbnailURL.ValueOrZero()) {
 		setWidgetProperty(builder, "linkButton", func(link *gtk.LinkButton) {
 			link.SetUri(post.Post.URL.ValueOrZero())
 			link.Show()
@@ -148,9 +154,9 @@ func setImage(builder *gtk.Builder, pixbuf *gdk.Pixbuf, imageId string, maxSize 
 	imageHeight := float64(pixbuf.GetHeight())
 	imageHeightScale := imageHeight / float64(maxSize[1])
 
-	if  imageWidthScale > 1.0 || imageHeightScale > 1.0 {
+	if imageWidthScale > 1.0 || imageHeightScale > 1.0 {
 		scale := math.Max(imageWidthScale, imageHeightScale)
-		pixbuf, _ = pixbuf.ScaleSimple(int(imageWidth / scale), int(imageHeight / scale), gdk.INTERP_HYPER)
+		pixbuf, _ = pixbuf.ScaleSimple(int(imageWidth/scale), int(imageHeight/scale), gdk.INTERP_HYPER)
 	}
 
 	image, err := getUIObject[gtk.Image](builder, imageId)
@@ -171,4 +177,30 @@ func setWidgetProperty[WType any](builder *gtk.Builder, widgetId string, setter 
 	}
 	setter(widget)
 	return
+}
+
+func convertToCard(box *gtk.Box) {
+	box.SetName("card")
+
+	/*theme := os.Getenv("GTK_THEME")
+	var bgColor string
+
+	darkMode := strings.Contains(theme, ":dark")
+	log.Println(darkMode)
+	if !darkMode {
+		bgColor = "white"
+	} else {
+		bgColor = "#222222"
+	}*/
+
+	cssProvider, _ := gtk.CssProviderNew()
+	cssProvider.LoadFromData(`
+			#card {
+				background-color: white;
+				border-radius: 20px;
+				padding: 10px;
+			}
+	`)
+	context, _ := box.GetStyleContext()
+	context.AddProvider(cssProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 }
