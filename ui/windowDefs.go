@@ -8,3 +8,5 @@ var MainWindowUI []byte
 //go:embed post.glade
 var PostUI []byte
 
+//go:embed style.css
+var StyleCSS []byte

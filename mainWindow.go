@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+
 	//"os"
 	//"strings"
 	"time"
@@ -46,6 +47,7 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 	vbox, err := getUIObject[gtk.Box](builder, "postContainer")
 	if err != nil {
 		err = fmt.Errorf("Couldn't find the vertical box: %s", err)
+		return
 	}
 
 	postsData, err := app.PostsLemmyClient()
@@ -53,11 +55,20 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 		return
 	}
 
+	toolbar, err := getUIObject[gtk.Box](builder, "toolbar")
+	if err != nil {
+		err = fmt.Errorf("Couldn't find bottom toolbar: %s", err)
+		return
+	}
+	//toolbar.Unparent()
+	vbox.Remove(toolbar)
+
 	for _, post := range postsData {
 		postUI, _ := getPostUI(post)
 		convertToCard(postUI)
 		vbox.PackStart(postUI, false, false, 0)
 	}
+	vbox.PackStart(toolbar, false, false, 0)
 
 	win.Window.Show()
 	return win, nil
@@ -182,25 +193,8 @@ func setWidgetProperty[WType any](builder *gtk.Builder, widgetId string, setter 
 func convertToCard(box *gtk.Box) {
 	box.SetName("card")
 
-	/*theme := os.Getenv("GTK_THEME")
-	var bgColor string
-
-	darkMode := strings.Contains(theme, ":dark")
-	log.Println(darkMode)
-	if !darkMode {
-		bgColor = "white"
-	} else {
-		bgColor = "#222222"
-	}*/
-
 	cssProvider, _ := gtk.CssProviderNew()
-	cssProvider.LoadFromData(`
-			#card {
-				background-color: white;
-				border-radius: 20px;
-				padding: 10px;
-			}
-	`)
+	cssProvider.LoadFromData(string(ui.StyleCSS))
 	context, _ := box.GetStyleContext()
 	context.AddProvider(cssProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 }
