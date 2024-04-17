@@ -26,7 +26,24 @@ type MainWindow struct {
 	Window *gtk.ApplicationWindow
 	toolbar *gtk.Box
 	postsContainer *gtk.Box
+	stack *gtk.Stack
+	postView *gtk.ScrolledWindow
+	mainView *gtk.ScrolledWindow
+	commentsView CommentsView
 	currentPage int
+}
+
+type CommentsView struct {
+	title *gtk.Label
+	communityIcon *gtk.Image
+	communityName *gtk.Label
+	username *gtk.Label
+	timestamp *gtk.Label
+	link *gtk.LinkButton
+	image *gtk.Image
+	description *gtk.TextView
+	votes *gtk.SpinButton
+	comments *gtk.TextView
 }
 
 func NewMainWindow(app *Application) (win MainWindow, err error) {
@@ -61,12 +78,42 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 		return
 	}
 
+	win.stack, err = getUIObject[gtk.Stack](builder, "stack")
+	if err != nil {
+		err = fmt.Errorf("Couldn't find stack: %s", err)
+		return
+	}
+
+	win.postView, err = getUIObject[gtk.ScrolledWindow](builder, "postView")
+	if err != nil {
+		err = fmt.Errorf("Couldn't find Post View: %s", err)
+		return
+	}
+
+	win.mainView, err = getUIObject[gtk.ScrolledWindow](builder, "mainView")
+	if err != nil {
+		err = fmt.Errorf("Couldn't find Main View: %s", err)
+		return
+	}
+
+	win.commentsView, err = NewCommentsView(builder)
+	if err != nil {
+		return
+	}
+
 	moreButton, err := getUIObject[gtk.Button](builder, "more")
 	if err != nil {
 		err = fmt.Errorf("Couldn't find More button: %s", err)
 		return
 	}
 	moreButton.Connect("clicked", func() { win.onMoreClicked() })
+
+	closeCommentsButton, err := getUIObject[gtk.Button](builder, "closeComments")
+	if err != nil {
+		err = fmt.Errorf("Couldn't find Close Comments button: %s", err)
+		return
+	}
+	closeCommentsButton.Connect("clicked", func() { win.onCloseComments() })
 
 	postsData, err := app.PostsLemmyClient(int64(win.currentPage))
 	if err != nil {
@@ -95,14 +142,14 @@ func (win *MainWindow)fillPosts(postsData []lemmy.PostView) {
 	win.postsContainer.Remove(win.toolbar)
 
 	for _, post := range postsData {
-		postUI, _ := getPostUI(post)
+		postUI, _ := win.getPostUI(post)
 		convertToCard(postUI)
 		win.postsContainer.PackStart(postUI, false, false, 0)
 	}
 	win.postsContainer.PackStart(win.toolbar, false, false, 0)
 }
 
-func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
+func (win *MainWindow)getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
 	var (
 		builder *gtk.Builder
 	)
@@ -143,7 +190,10 @@ func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
 		spinner.SetIncrements(1, 1)
 		spinner.SetValue(float64(post.Counts.Score))
 	})
-	setWidgetProperty(builder, "comments", func(button *gtk.Button) { button.SetLabel(fmt.Sprintf("%d comments", post.Counts.Comments)) })
+	setWidgetProperty(builder, "comments", func(button *gtk.Button) {
+		button.SetLabel(fmt.Sprintf("%d comments", post.Counts.Comments))
+		button.Connect("clicked", func() { win.onOpenComments(post.Post.ID) })
+	})
 
 	if post.Post.ThumbnailURL.IsValid() {
 		LoadImageFromURL(post.Post.ThumbnailURL.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
@@ -170,7 +220,7 @@ func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
 	return
 }
 
-func setImage(builder *gtk.Builder, pixbuf *gdk.Pixbuf, imageId string, maxSize [2]int, err error) {
+func setDirectImage(image *gtk.Image, pixbuf *gdk.Pixbuf, maxSize [2]int, err error) {
 	if err != nil {
 		return
 	}
@@ -185,14 +235,22 @@ func setImage(builder *gtk.Builder, pixbuf *gdk.Pixbuf, imageId string, maxSize 
 		pixbuf, _ = pixbuf.ScaleSimple(int(imageWidth/scale), int(imageHeight/scale), gdk.INTERP_HYPER)
 	}
 
+	image.SetFromPixbuf(pixbuf)
+	image.Show()
+}
+
+func setImage(builder *gtk.Builder, pixbuf *gdk.Pixbuf, imageId string, maxSize [2]int, err error) {
+	if err != nil {
+		return
+	}
+
 	image, err := getUIObject[gtk.Image](builder, imageId)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	image.SetFromPixbuf(pixbuf)
-	image.Show()
+	setDirectImage(image, pixbuf, maxSize, err)
 }
 
 func setWidgetProperty[WType any](builder *gtk.Builder, widgetId string, setter func(widget *WType)) (err error) {
@@ -223,4 +281,123 @@ func (win *MainWindow)onMoreClicked() {
 	}
 
 	win.fillPosts(postsData)
+}
+
+func (win *MainWindow)onOpenComments(postId int64) {
+	win.fillComments(postId)
+	win.stack.SetTransitionType(gtk.STACK_TRANSITION_TYPE_SLIDE_LEFT)
+	win.stack.SetVisibleChild(&win.postView.Container)
+}
+
+func (win *MainWindow)onCloseComments() {
+	win.stack.SetTransitionType(gtk.STACK_TRANSITION_TYPE_SLIDE_RIGHT)
+	win.stack.SetVisibleChild(&win.mainView.Container)
+}
+
+func (win *MainWindow)fillComments(postId int64) {
+	post, _ := win.app.PostLemmyClient(postId)
+
+	win.commentsView.title.SetText(post.Post.Name)
+	win.commentsView.communityName.SetText(fmt.Sprintf("<span size=\"large\">%s</span>", post.Community.Title))
+	win.commentsView.communityName.SetUseMarkup(true)
+	win.commentsView.timestamp.SetText(fmt.Sprintf("%s ago", time.Since(post.Post.Published).Round(time.Minute).String()))
+
+	if post.Post.Body.IsValid() {
+		buffer, _ := win.commentsView.description.GetBuffer()
+		buffer.SetText(post.Post.Body.ValueOrZero())
+		win.commentsView.description.Show()
+	} else {
+		win.commentsView.description.Hide()
+	}
+
+	win.commentsView.votes.SetRange(float64(post.Counts.Score)-1, float64(post.Counts.Score)+1)
+	win.commentsView.votes.SetValue(float64(post.Counts.Score))
+
+	if post.Creator.DisplayName.IsValid() {
+		win.commentsView.username.SetText(post.Creator.DisplayName.ValueOrZero())
+	} else {
+		win.commentsView.username.SetText(post.Creator.Name)
+	}
+
+	win.commentsView.communityIcon.Clear()
+	if post.Community.Icon.IsValid() {
+		LoadImageFromURL(post.Community.Icon.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
+			setDirectImage(win.commentsView.communityIcon, pixbuf, [2]int{communityIconSize, communityIconSize}, err)
+		})
+	}
+
+	win.commentsView.image.Clear()
+	if post.Post.ThumbnailURL.IsValid() {
+		LoadImageFromURL(post.Post.ThumbnailURL.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
+			setDirectImage(win.commentsView.image, pixbuf, [2]int{maxPostImageSize, maxPostImageSize}, err)
+		})
+	}
+
+	if post.Post.URL.IsValid() && (!post.Post.ThumbnailURL.IsValid() || post.Post.URL.ValueOrZero() != post.Post.ThumbnailURL.ValueOrZero()) {
+		win.commentsView.link.SetUri(post.Post.URL.ValueOrZero())
+		win.commentsView.link.Show()
+	} else {
+		win.commentsView.link.Hide()
+	}
+}
+
+func NewCommentsView(builder *gtk.Builder) (commentsView CommentsView, err error) {
+	card, err := getUIObject[gtk.Box](builder, "commentsContainer")
+	if err != nil {
+		return
+	}
+	convertToCard(card)
+
+	commentsView.title, err = getUIObject[gtk.Label](builder, "title")
+	if err != nil {
+		return
+	}
+
+	commentsView.communityIcon, err = getUIObject[gtk.Image](builder, "communityIcon")
+	if err != nil {
+		return
+	}
+
+	commentsView.communityName, err = getUIObject[gtk.Label](builder, "communityName")
+	if err != nil {
+		return
+	}
+
+	commentsView.username, err = getUIObject[gtk.Label](builder, "username")
+	if err != nil {
+		return
+	}
+
+	commentsView.link, err = getUIObject[gtk.LinkButton](builder, "linkButton")
+	if err != nil {
+		return
+	}
+
+	commentsView.timestamp, err = getUIObject[gtk.Label](builder, "time")
+	if err != nil {
+		return
+	}
+
+	commentsView.image, err = getUIObject[gtk.Image](builder, "image")
+	if err != nil {
+		return
+	}
+
+	commentsView.description, err = getUIObject[gtk.TextView](builder, "description")
+	if err != nil {
+		return
+	}
+
+	commentsView.votes, err = getUIObject[gtk.SpinButton](builder, "votes")
+	if err != nil {
+		return
+	}
+	commentsView.votes.SetIncrements(1, 1)
+
+	commentsView.comments, err = getUIObject[gtk.TextView](builder, "commentsText")
+	if err != nil {
+		return
+	}
+
+	return
 }
