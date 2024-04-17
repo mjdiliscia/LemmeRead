@@ -22,7 +22,11 @@ const (
 )
 
 type MainWindow struct {
+	app *Application
 	Window *gtk.ApplicationWindow
+	toolbar *gtk.Box
+	postsContainer *gtk.Box
+	currentPage int
 }
 
 func NewMainWindow(app *Application) (win MainWindow, err error) {
@@ -30,6 +34,7 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 		err = fmt.Errorf("Received app is nil")
 		return
 	}
+	win.app = app
 
 	builder, err := gtk.BuilderNewFromString(string(ui.MainWindowUI))
 	if err != nil {
@@ -44,31 +49,30 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 	}
 	win.Window.SetApplication(app.GtkApplication)
 
-	vbox, err := getUIObject[gtk.Box](builder, "postContainer")
+	win.postsContainer, err = getUIObject[gtk.Box](builder, "postContainer")
 	if err != nil {
 		err = fmt.Errorf("Couldn't find the vertical box: %s", err)
 		return
 	}
 
-	postsData, err := app.PostsLemmyClient()
-	if err != nil {
-		return
-	}
-
-	toolbar, err := getUIObject[gtk.Box](builder, "toolbar")
+	win.toolbar, err = getUIObject[gtk.Box](builder, "toolbar")
 	if err != nil {
 		err = fmt.Errorf("Couldn't find bottom toolbar: %s", err)
 		return
 	}
-	//toolbar.Unparent()
-	vbox.Remove(toolbar)
 
-	for _, post := range postsData {
-		postUI, _ := getPostUI(post)
-		convertToCard(postUI)
-		vbox.PackStart(postUI, false, false, 0)
+	moreButton, err := getUIObject[gtk.Button](builder, "more")
+	if err != nil {
+		err = fmt.Errorf("Couldn't find More button: %s", err)
+		return
 	}
-	vbox.PackStart(toolbar, false, false, 0)
+	moreButton.Connect("clicked", func() { win.onMoreClicked() })
+
+	postsData, err := app.PostsLemmyClient(int64(win.currentPage))
+	if err != nil {
+		return
+	}
+	win.fillPosts(postsData)
 
 	win.Window.Show()
 	return win, nil
@@ -85,6 +89,17 @@ func getUIObject[OType any](builder *gtk.Builder, objectId string) (object *OTyp
 	} else {
 		return object, fmt.Errorf("Object '%s' can't be correctly casted.", objectId)
 	}
+}
+
+func (win *MainWindow)fillPosts(postsData []lemmy.PostView) {
+	win.postsContainer.Remove(win.toolbar)
+
+	for _, post := range postsData {
+		postUI, _ := getPostUI(post)
+		convertToCard(postUI)
+		win.postsContainer.PackStart(postUI, false, false, 0)
+	}
+	win.postsContainer.PackStart(win.toolbar, false, false, 0)
 }
 
 func getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
@@ -197,4 +212,15 @@ func convertToCard(box *gtk.Box) {
 	cssProvider.LoadFromData(string(ui.StyleCSS))
 	context, _ := box.GetStyleContext()
 	context.AddProvider(cssProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+}
+
+func (win *MainWindow)onMoreClicked() {
+	win.currentPage++
+	postsData, err := win.app.PostsLemmyClient(int64(win.currentPage))
+	if err != nil {
+		log.Printf("Error getting posts from page %d: %s", win.currentPage, err)
+		return
+	}
+
+	win.fillPosts(postsData)
 }

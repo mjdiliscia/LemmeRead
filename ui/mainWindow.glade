@@ -2,8 +2,13 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <object class="GtkImage" id="moreImg">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-zoom-in</property>
+  </object>
   <object class="GtkApplicationWindow" id="window">
-    <property name="width-request">700</property>
+    <property name="width-request">720</property>
     <property name="height-request">600</property>
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Lemme Read</property>
@@ -59,27 +64,12 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="prevPage">
-                            <property name="label">gtk-go-back</property>
+                          <object class="GtkButton" id="more">
+                            <property name="label" translatable="yes">More posts</property>
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
-                            <property name="use-stock">True</property>
-                            <property name="always-show-image">True</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="nextPage">
-                            <property name="label">gtk-go-forward</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="use-stock">True</property>
+                            <property name="image">moreImg</property>
                             <property name="always-show-image">True</property>
                           </object>
                           <packing>
