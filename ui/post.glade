@@ -60,6 +60,7 @@
             </child>
             <child>
               <object class="GtkLabel" id="communityName">
+                <property name="name">communityName</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">&lt;span size="large"&gt;Community name&lt;/span&gt;</property>

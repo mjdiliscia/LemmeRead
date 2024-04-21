@@ -5,6 +5,11 @@
   <object class="GtkImage" id="foldIcon">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
+    <property name="stock">gtk-zoom-out</property>
+  </object>
+  <object class="GtkImage" id="unfoldIcon">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
     <property name="stock">gtk-zoom-in</property>
   </object>
   <object class="GtkWindow">
@@ -14,6 +19,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
+        <property name="spacing">3</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
@@ -34,6 +40,19 @@
               </packing>
             </child>
             <child>
+              <object class="GtkButton" id="unfold">
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="image">unfoldIcon</property>
+                <property name="relief">none</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkImage" id="userImage">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -41,7 +60,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -53,7 +72,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -64,7 +83,7 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
             <child>
@@ -91,6 +110,7 @@
           <object class="GtkTextView" id="commentText">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="editable">False</property>
             <property name="wrap-mode">word</property>
           </object>
           <packing>
@@ -130,6 +150,17 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>

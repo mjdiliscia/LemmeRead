@@ -1,5 +1,9 @@
-#post, #commentsContainer {
+#post {
 	background-color: white;
 	border-radius: 20px;
 	padding: 10px;
+}
+
+#communityName {
+	font: 20px Sans;
 }

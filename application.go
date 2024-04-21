@@ -102,6 +102,7 @@ func (app *Application) PostLemmyClient(postId int64) (post lemmy.PostView, err 
 func (app *Application) CommentsLemmyClient(postId int64) (comments []lemmy.CommentView, err error) {
 	response, err := app.LemmyClient.Comments(app.LemmyContext, lemmy.GetComments{
 		PostID: lemmy.NewOptional(postId),
+		Limit: lemmy.NewOptional(int64(50)),
 	})
 	if err != nil {
 		return

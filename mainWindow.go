@@ -6,6 +6,7 @@ import (
 	"math"
 	"reflect"
 	"slices"
+	"strings"
 
 	//"os"
 	//"strings"
@@ -169,8 +170,8 @@ func (win *MainWindow)getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error
 		}
 	})
 	setWidgetProperty(builder, "communityName", func(label *gtk.Label) {
-		label.SetText(fmt.Sprintf("<span size=\"large\">%s</span>", post.Community.Title))
-		label.SetUseMarkup(true)
+		label.SetText(post.Community.Title)
+		applyStyle(&label.Widget)
 	})
 	setWidgetProperty(builder, "username", func(label *gtk.Label) {
 		if post.Creator.DisplayName.IsValid() {
@@ -292,8 +293,7 @@ func (win *MainWindow)fillComments(postId int64) {
 	post, _ := win.app.PostLemmyClient(postId)
 
 	win.commentsView.title.SetText(post.Post.Name)
-	win.commentsView.communityName.SetText(fmt.Sprintf("<span size=\"large\">%s</span>", post.Community.Title))
-	win.commentsView.communityName.SetUseMarkup(true)
+	win.commentsView.communityName.SetText(post.Community.Title)
 	win.commentsView.timestamp.SetText(fmt.Sprintf("%s ago", time.Since(post.Post.Published).Round(time.Minute).String()))
 
 	if post.Post.Body.IsValid() {
@@ -342,13 +342,30 @@ func (win *MainWindow)fillComments(postId int64) {
 	})
 
 	comments, _ := win.app.CommentsLemmyClient(postId)
+	slices.SortFunc(comments, func(a lemmy.CommentView, b lemmy.CommentView) int {
+		return len(strings.Split(a.Comment.Path, ".")) - len(strings.Split(b.Comment.Path, "."))
+	})
+	commentMap := make(map[string]*gtk.Box, len(comments))
 	for _, comment := range(comments) {
 		commentUI, err := win.getCommentUI(comment)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		win.commentsView.commentsParent.PackStart(commentUI, true, false, 5)
+		commentMap[comment.Comment.Path] = commentUI
+		parent := strings.Replace(comment.Comment.Path, fmt.Sprintf(".%d", comment.Comment.ID), "", 1)
+		if parent == "0" {
+			win.commentsView.commentsParent.PackStart(commentUI, true, false, 5)
+		} else if _, ok := commentMap[parent]; ok {
+			separator, _ := gtk.SeparatorNew(gtk.ORIENTATION_HORIZONTAL)
+			box, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
+			box.PackStart(separator, false, false, 5)
+			box.PackStart(commentUI, true, true, 0)
+			box.ShowAll()
+			commentMap[parent].PackStart(box, true, false, 0)
+		} else {
+			log.Printf("Couldn't find %s", parent)
+		}
 	}
 
 	newImage, _ := gtk.ImageNew()
@@ -362,6 +379,13 @@ func (win *MainWindow)getCommentUI(comment lemmy.CommentView) (commentUI *gtk.Bo
 		return
 	}
 
+	var (
+		fold *gtk.Button
+		unfold *gtk.Button
+		commentText *gtk.TextView
+		votes *gtk.SpinButton
+	)
+
 	setWidgetProperty(builder, "username", func(label *gtk.Label) {
 		if comment.Creator.DisplayName.IsValid() {
 			label.SetText(comment.Creator.DisplayName.ValueOrZero())
@@ -371,10 +395,11 @@ func (win *MainWindow)getCommentUI(comment lemmy.CommentView) (commentUI *gtk.Bo
 	})
 
 	setWidgetProperty(builder, "timestamp", func(label *gtk.Label) {
-		label.SetText(fmt.Sprintf("%s ago", time.Since(comment.Community.Published).Round(time.Minute).String()))
+		label.SetText(fmt.Sprintf("%s ago", time.Since(comment.Comment.Published).Round(time.Minute).String()))
 	})
 
 	setWidgetProperty(builder, "commentText", func(text *gtk.TextView) {
+		commentText = text
 		buffer, err := text.GetBuffer()
 		if err != nil {
 			log.Println(err)
@@ -384,8 +409,10 @@ func (win *MainWindow)getCommentUI(comment lemmy.CommentView) (commentUI *gtk.Bo
 	})
 
 	setWidgetProperty(builder, "votes", func(spin *gtk.SpinButton) {
+		votes = spin
 		spin.SetRange(float64(comment.Counts.Score)-1, float64(comment.Counts.Score)+1)
 		spin.SetValue(float64(comment.Counts.Score))
+		spin.SetIncrements(1, 1)
 	})
 
 	if comment.Creator.Avatar.IsValid() {
@@ -393,6 +420,27 @@ func (win *MainWindow)getCommentUI(comment lemmy.CommentView) (commentUI *gtk.Bo
 			setImage(builder, pixbuf, "userImage", [2]int{communityIconSize, communityIconSize}, err)
 		})
 	}
+
+	fold, err = getUIObject[gtk.Button](builder, "fold")
+	if err != nil {
+		return
+	}
+	unfold, err = getUIObject[gtk.Button](builder, "unfold")
+	if err != nil {
+		return
+	}
+	fold.Connect("clicked", func() {
+		fold.Hide()
+		unfold.Show()
+		commentText.Hide()
+		votes.Hide()
+	})
+	unfold.Connect("clicked", func() {
+		fold.Show()
+		unfold.Hide()
+		commentText.Show()
+		votes.Show()
+	})
 
 	commentUI, err = getUIObject[gtk.Box](builder, "commentBox")
 	if err != nil {
@@ -404,11 +452,11 @@ func (win *MainWindow)getCommentUI(comment lemmy.CommentView) (commentUI *gtk.Bo
 }
 
 func NewCommentsView(builder *gtk.Builder) (commentsView CommentsView, err error) {
-	commentsContainer, err := getUIObject[gtk.Box](builder, "commentsContainer")
+	post, err := getUIObject[gtk.Box](builder, "post")
 	if err != nil {
 		return
 	}
-	applyStyle(&commentsContainer.Widget)
+	applyStyle(&post.Widget)
 
 	commentsView.title, err = getUIObject[gtk.Label](builder, "title")
 	if err != nil {
@@ -424,6 +472,7 @@ func NewCommentsView(builder *gtk.Builder) (commentsView CommentsView, err error
 	if err != nil {
 		return
 	}
+	applyStyle(&commentsView.communityName.Widget)
 
 	commentsView.username, err = getUIObject[gtk.Label](builder, "username")
 	if err != nil {
