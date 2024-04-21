@@ -144,7 +144,7 @@ func (win *MainWindow)fillPosts(postsData []lemmy.PostView) {
 
 		win.shownPosts = append(win.shownPosts, post.Post.ID)
 		postUI, _ := win.getPostUI(post)
-		convertToCard(postUI)
+		applyStyle(&postUI.Widget)
 		win.postsContainer.PackStart(postUI, false, false, 0)
 	}
 	win.postsContainer.PackStart(win.toolbar, false, false, 0)
@@ -259,12 +259,10 @@ func setWidgetProperty[WType any](builder *gtk.Builder, widgetId string, setter 
 	return
 }
 
-func convertToCard(box *gtk.Box) {
-	box.SetName("card")
-
+func applyStyle(widget *gtk.Widget) {
 	cssProvider, _ := gtk.CssProviderNew()
 	cssProvider.LoadFromData(string(ui.StyleCSS))
-	context, _ := box.GetStyleContext()
+	context, _ := widget.GetStyleContext()
 	context.AddProvider(cssProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 }
 
@@ -406,11 +404,11 @@ func (win *MainWindow)getCommentUI(comment lemmy.CommentView) (commentUI *gtk.Bo
 }
 
 func NewCommentsView(builder *gtk.Builder) (commentsView CommentsView, err error) {
-	card, err := getUIObject[gtk.Box](builder, "commentsContainer")
+	commentsContainer, err := getUIObject[gtk.Box](builder, "commentsContainer")
 	if err != nil {
 		return
 	}
-	convertToCard(card)
+	applyStyle(&commentsContainer.Widget)
 
 	commentsView.title, err = getUIObject[gtk.Label](builder, "title")
 	if err != nil {

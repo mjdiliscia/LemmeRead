@@ -6,6 +6,7 @@
     <property name="can-focus">False</property>
     <child>
       <object class="GtkBox" id="post">
+        <property name="name">post</property>
         <property name="width-request">600</property>
         <property name="visible">True</property>
         <property name="can-focus">False</property>

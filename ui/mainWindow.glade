@@ -201,6 +201,7 @@
                     </child>
                     <child>
                       <object class="GtkBox" id="commentsContainer">
+                        <property name="name">commentsContainer</property>
                         <property name="width-request">600</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
