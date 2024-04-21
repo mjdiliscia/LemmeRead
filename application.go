@@ -98,3 +98,15 @@ func (app *Application) PostLemmyClient(postId int64) (post lemmy.PostView, err 
 	post = response.PostView
 	return
 }
+
+func (app *Application) CommentsLemmyClient(postId int64) (comments []lemmy.CommentView, err error) {
+	response, err := app.LemmyClient.Comments(app.LemmyContext, lemmy.GetComments{
+		PostID: lemmy.NewOptional(postId),
+	})
+	if err != nil {
+		return
+	}
+
+	comments = response.Comments
+	return
+}

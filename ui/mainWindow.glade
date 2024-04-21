@@ -413,9 +413,13 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkTextView" id="commentsText">
+                          <object class="GtkBox" id="commentsParent">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <placeholder/>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>

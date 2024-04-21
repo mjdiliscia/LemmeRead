@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"reflect"
+	"slices"
 
 	//"os"
 	//"strings"
@@ -31,6 +33,7 @@ type MainWindow struct {
 	mainView *gtk.ScrolledWindow
 	commentsView CommentsView
 	currentPage int
+	shownPosts []int64
 }
 
 type CommentsView struct {
@@ -43,7 +46,7 @@ type CommentsView struct {
 	image *gtk.Image
 	description *gtk.TextView
 	votes *gtk.SpinButton
-	comments *gtk.TextView
+	commentsParent *gtk.Box
 }
 
 func NewMainWindow(app *Application) (win MainWindow, err error) {
@@ -61,38 +64,32 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 
 	win.Window, err = getUIObject[gtk.ApplicationWindow](builder, "window")
 	if err != nil {
-		err = fmt.Errorf("Couldn't create application window: %s", err)
 		return
 	}
 	win.Window.SetApplication(app.GtkApplication)
 
 	win.postsContainer, err = getUIObject[gtk.Box](builder, "postContainer")
 	if err != nil {
-		err = fmt.Errorf("Couldn't find the vertical box: %s", err)
 		return
 	}
 
 	win.toolbar, err = getUIObject[gtk.Box](builder, "toolbar")
 	if err != nil {
-		err = fmt.Errorf("Couldn't find bottom toolbar: %s", err)
 		return
 	}
 
 	win.stack, err = getUIObject[gtk.Stack](builder, "stack")
 	if err != nil {
-		err = fmt.Errorf("Couldn't find stack: %s", err)
 		return
 	}
 
 	win.postView, err = getUIObject[gtk.ScrolledWindow](builder, "postView")
 	if err != nil {
-		err = fmt.Errorf("Couldn't find Post View: %s", err)
 		return
 	}
 
 	win.mainView, err = getUIObject[gtk.ScrolledWindow](builder, "mainView")
 	if err != nil {
-		err = fmt.Errorf("Couldn't find Main View: %s", err)
 		return
 	}
 
@@ -103,14 +100,12 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 
 	moreButton, err := getUIObject[gtk.Button](builder, "more")
 	if err != nil {
-		err = fmt.Errorf("Couldn't find More button: %s", err)
 		return
 	}
 	moreButton.Connect("clicked", func() { win.onMoreClicked() })
 
 	closeCommentsButton, err := getUIObject[gtk.Button](builder, "closeComments")
 	if err != nil {
-		err = fmt.Errorf("Couldn't find Close Comments button: %s", err)
 		return
 	}
 	closeCommentsButton.Connect("clicked", func() { win.onCloseComments() })
@@ -128,13 +123,14 @@ func NewMainWindow(app *Application) (win MainWindow, err error) {
 func getUIObject[OType any](builder *gtk.Builder, objectId string) (object *OType, err error) {
 	obj, err := builder.GetObject(objectId)
 	if err != nil {
+		fmt.Errorf("Couldn't find object of name '%s' (asked type was %s): %s", objectId, reflect.TypeOf(object).Name(), err)
 		return
 	}
 	object, ok := any(obj).(*OType)
 	if ok {
 		return object, nil
 	} else {
-		return object, fmt.Errorf("Object '%s' can't be correctly casted.", objectId)
+		return object, fmt.Errorf("Object '%s' can't be correctly casted to %s", objectId, reflect.TypeOf(object).Name())
 	}
 }
 
@@ -142,6 +138,11 @@ func (win *MainWindow)fillPosts(postsData []lemmy.PostView) {
 	win.postsContainer.Remove(win.toolbar)
 
 	for _, post := range postsData {
+		if slices.Index(win.shownPosts, post.Post.ID) != -1 {
+			continue
+		}
+
+		win.shownPosts = append(win.shownPosts, post.Post.ID)
 		postUI, _ := win.getPostUI(post)
 		convertToCard(postUI)
 		win.postsContainer.PackStart(postUI, false, false, 0)
@@ -150,11 +151,7 @@ func (win *MainWindow)fillPosts(postsData []lemmy.PostView) {
 }
 
 func (win *MainWindow)getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error) {
-	var (
-		builder *gtk.Builder
-	)
-
-	builder, err = gtk.BuilderNewFromString(string(ui.PostUI))
+	builder, err := gtk.BuilderNewFromString(string(ui.PostUI))
 	if err != nil {
 		return
 	}
@@ -256,7 +253,6 @@ func setImage(builder *gtk.Builder, pixbuf *gdk.Pixbuf, imageId string, maxSize 
 func setWidgetProperty[WType any](builder *gtk.Builder, widgetId string, setter func(widget *WType)) (err error) {
 	widget, err := getUIObject[WType](builder, widgetId)
 	if err != nil {
-		log.Printf("Couldn't set property of '%s'", widgetId)
 		return
 	}
 	setter(widget)
@@ -339,6 +335,74 @@ func (win *MainWindow)fillComments(postId int64) {
 	} else {
 		win.commentsView.link.Hide()
 	}
+
+	win.commentsView.commentsParent.GetChildren().Foreach(func(child interface{}) {
+		widget, ok := any(child).(*gtk.Widget)
+		if ok {
+			widget.Destroy()
+		}
+	})
+
+	comments, _ := win.app.CommentsLemmyClient(postId)
+	for _, comment := range(comments) {
+		commentUI, err := win.getCommentUI(comment)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		win.commentsView.commentsParent.PackStart(commentUI, true, false, 5)
+	}
+
+	newImage, _ := gtk.ImageNew()
+	win.commentsView.commentsParent.PackStart(newImage, true, true, 0)
+	newImage.SetVExpand(true)
+}
+
+func (win *MainWindow)getCommentUI(comment lemmy.CommentView) (commentUI *gtk.Box, err error) {
+	builder, err := gtk.BuilderNewFromString(string(ui.CommentUI))
+	if err != nil {
+		return
+	}
+
+	setWidgetProperty(builder, "username", func(label *gtk.Label) {
+		if comment.Creator.DisplayName.IsValid() {
+			label.SetText(comment.Creator.DisplayName.ValueOrZero())
+		} else {
+			label.SetText(comment.Creator.Name)
+		}
+	})
+
+	setWidgetProperty(builder, "timestamp", func(label *gtk.Label) {
+		label.SetText(fmt.Sprintf("%s ago", time.Since(comment.Community.Published).Round(time.Minute).String()))
+	})
+
+	setWidgetProperty(builder, "commentText", func(text *gtk.TextView) {
+		buffer, err := text.GetBuffer()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		buffer.SetText(comment.Comment.Content)
+	})
+
+	setWidgetProperty(builder, "votes", func(spin *gtk.SpinButton) {
+		spin.SetRange(float64(comment.Counts.Score)-1, float64(comment.Counts.Score)+1)
+		spin.SetValue(float64(comment.Counts.Score))
+	})
+
+	if comment.Creator.Avatar.IsValid() {
+		LoadImageFromURL(comment.Creator.Avatar.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
+			setImage(builder, pixbuf, "userImage", [2]int{communityIconSize, communityIconSize}, err)
+		})
+	}
+
+	commentUI, err = getUIObject[gtk.Box](builder, "commentBox")
+	if err != nil {
+		return
+	}
+	commentUI.Unparent()
+
+	return
 }
 
 func NewCommentsView(builder *gtk.Builder) (commentsView CommentsView, err error) {
@@ -394,7 +458,7 @@ func NewCommentsView(builder *gtk.Builder) (commentsView CommentsView, err error
 	}
 	commentsView.votes.SetIncrements(1, 1)
 
-	commentsView.comments, err = getUIObject[gtk.TextView](builder, "commentsText")
+	commentsView.commentsParent, err = getUIObject[gtk.Box](builder, "commentsParent")
 	if err != nil {
 		return
 	}
