@@ -157,7 +157,10 @@ func (win *MainWindow)getPostUI(post lemmy.PostView) (postUI *gtk.Box, err error
 		return
 	}
 
-	setWidgetProperty(builder, "title", func(label *gtk.Label) { label.SetText(post.Post.Name) })
+	setWidgetProperty(builder, "title", func(label *gtk.Label) {
+		label.SetText(post.Post.Name)
+		applyStyle(&label.Widget)
+	})
 	setWidgetProperty(builder, "description", func(textView *gtk.TextView) {
 		if post.Post.Body.IsValid() {
 			buffer, _ := textView.GetBuffer()
@@ -462,6 +465,7 @@ func NewCommentsView(builder *gtk.Builder) (commentsView CommentsView, err error
 	if err != nil {
 		return
 	}
+	applyStyle(&commentsView.title.Widget)
 
 	commentsView.communityIcon, err = getUIObject[gtk.Image](builder, "communityIcon")
 	if err != nil {

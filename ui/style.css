@@ -7,3 +7,8 @@
 #communityName {
 	font: 20px Sans;
 }
+
+#postTitle {
+	font: 25px Sans;
+	font-weight: bold;
+}
