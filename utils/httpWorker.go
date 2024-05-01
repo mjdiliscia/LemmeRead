@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/gotk3/gotk3/glib"
 )
 
-func LoadImageFromURL(url string, callback func(*gdk.Pixbuf, error)) {
+func LoadPixmapFromURL(url string, callback func(*gdk.Pixbuf, error)) {
 	callbackInMainThread := func(pixbuf *gdk.Pixbuf, err error) {
 		glib.IdleAdd(func() bool {
 			callback(pixbuf, err)

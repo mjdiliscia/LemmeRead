@@ -1,4 +1,4 @@
-package ui
+package data
 
 import _ "embed"
 

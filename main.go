@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 )
@@ -12,4 +13,5 @@ func main() {
 	}
 
 	app.GtkApplication.Run(os.Args)
+	fmt.Println("Successful execution")
 }

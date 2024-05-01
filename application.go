@@ -7,6 +7,7 @@ import (
 
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
+	"github.com/mjdiliscia/LemmeRead/ui"
 	"go.elara.ws/go-lemmy"
 )
 
@@ -16,7 +17,7 @@ type Application struct {
 	LemmyClient *lemmy.Client
 	LemmyContext context.Context
 	GtkApplication *gtk.Application
-	Window MainWindow
+	Window ui.MainWindow
 }
 
 func NewApplication() (app Application, err error) {
@@ -42,10 +43,38 @@ func (app* Application) onActivate() {
 		log.Panicf("Couldn't login to lemmy: %s", err)
 	}
 
-	app.Window, err = NewMainWindow(app)
+	app.Window, err = ui.NewMainWindow()
 	if err != nil {
 		log.Panic(err)
 	}
+
+	var page int64 = 0
+	posts, err := app.PostsLemmyClient(page)
+	if err != nil {
+		log.Panic(err)
+	}
+	app.Window.PostList.FillPostsData(posts)
+	app.Window.OnPostListBottomReached = func() {
+		page++
+		posts, err := app.PostsLemmyClient(page)
+		if err != nil {
+			log.Panic(err)
+		}
+		app.Window.PostList.FillPostsData(posts)
+	}
+	app.Window.PostList.CommentButtonClicked = func (id int64) {
+		post, err := app.PostLemmyClient(id)
+		if err != nil {
+			log.Panic(err)
+		}
+		comments, err := app.CommentsLemmyClient(id)
+		if err != nil {
+			log.Panic(err)
+		}
+		app.Window.OpenComments(post, comments)
+	}
+
+	log.Println("All done")
 }
 
 func (app *Application) SetupLemmyClient(url string) (err error) {
