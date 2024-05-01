@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"reflect"
+	"regexp"
 	"time"
 
 	"github.com/gotk3/gotk3/gdk"
@@ -77,4 +78,32 @@ func ApplyStyle(widget *gtk.Widget) {
 
 func GetNiceDuration(timestamp time.Duration) string {
 	return fmt.Sprintf("%s ago", timestamp.String())
+}
+
+func MarkdownToLabelMarkup(text string) (markup string) {
+    // Bold conversion
+    boldRe := regexp.MustCompile(`\*\*(.+?)\*\*`)
+    markup = boldRe.ReplaceAllString(text, fmt.Sprintf("<b>%s</b>", "$1"))
+
+    // Italic conversion
+    italicRe := regexp.MustCompile(`\_(.+?)\_`)
+    markup = italicRe.ReplaceAllString(markup, fmt.Sprintf("<i>%s</i>", "$1"))
+
+    // Strikethrough conversion (basic)
+    strikethroughRe := regexp.MustCompile(`~~(.+?)~~`)
+    markup = strikethroughRe.ReplaceAllString(markup, fmt.Sprintf("<span style=\"text-decoration: line-through\">%s</span>", "$1"))
+
+	// Link conversion
+    linkRe := regexp.MustCompile(`\[(.+?)\]\((.+?)\)`)
+	markup = linkRe.ReplaceAllString(markup, fmt.Sprintf("<a href=\"%s\">%s</a>", "$2", "$1"))
+
+	// Textless link conversion
+    textlessLinkRe := regexp.MustCompile(`!\[\]\((.+?)\)`)
+	markup = textlessLinkRe.ReplaceAllString(markup, fmt.Sprintf("<a href=\"%s\">%s</a>", "$1", "$1"))
+
+	// & correction
+	ampersandRe := regexp.MustCompile(`\&`)
+	markup = ampersandRe.ReplaceAllString(markup, "&amp;")
+
+	return
 }

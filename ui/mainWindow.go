@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"log"
+
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/mjdiliscia/LemmeRead/data"
 	"github.com/mjdiliscia/LemmeRead/utils"
@@ -16,7 +18,7 @@ const (
 type MainWindow struct {
 	Window *gtk.ApplicationWindow
 	PostList PostsUI
-	Post PostUI
+	Post *PostUI
 	OnPostListBottomReached func()
 
 	stack *gtk.Stack
@@ -26,13 +28,13 @@ type MainWindow struct {
 	postScroll *gtk.ScrolledWindow
 }
 
-func NewMainWindow() (win MainWindow, err error) {
+func (win *MainWindow) SetupMainWindow() (err error) {
 	builder, err := win.buildAndSetReferences()
 	if err != nil {
 		return
 	}
 
-	win.PostList, err = NewPostsUI(win.postListBox)
+	err = win.PostList.SetupPostsUI(win.postListBox)
 	if err != nil {
 		return
 	}
@@ -49,7 +51,7 @@ func NewMainWindow() (win MainWindow, err error) {
 
 	win.Window.Show()
 
-	return win, nil
+	return nil
 }
 
 func (win *MainWindow) buildAndSetReferences() (builder *gtk.Builder, err error) {
@@ -92,13 +94,18 @@ func (win *MainWindow) buildAndSetReferences() (builder *gtk.Builder, err error)
 }
 
 func (win *MainWindow) OpenComments(post lemmy.PostView, comments []lemmy.CommentView) {
-	win.Post, _ = NewPostUI(post, comments, win.postBox)
+	win.Post = &PostUI{}
+	err := win.Post.SetupPostUI(post, comments, win.postBox)
+	if err != nil {
+		log.Println(err)
+	}
 	win.stack.SetTransitionType(gtk.STACK_TRANSITION_TYPE_SLIDE_LEFT)
 	win.stack.SetVisibleChild(&win.postScroll.Container)
 }
 
 func (win *MainWindow) CloseComments() {
 	win.Post.Destroy()
+	win.Post = nil
 	win.stack.SetTransitionType(gtk.STACK_TRANSITION_TYPE_SLIDE_RIGHT)
 	win.stack.SetVisibleChild(&win.postListScroll.Container)
 }

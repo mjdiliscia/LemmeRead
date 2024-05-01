@@ -16,7 +16,7 @@ type PostsUI struct {
 	shownPosts []int64
 }
 
-func NewPostsUI(box *gtk.Box) (pui PostsUI, err error) {
+func (pui *PostsUI) SetupPostsUI(box *gtk.Box) (err error) {
 	pui.postsBox = box
 
 	return
@@ -29,11 +29,12 @@ func (pui *PostsUI) FillPostsData(posts []lemmy.PostView) {
 		}
 
 		pui.shownPosts = append(pui.shownPosts, post.Post.ID)
-		postUI, err := NewPostUI(post, nil, pui.postsBox)
+		pui.posts = append(pui.posts, PostUI{})
+		postUI := pui.posts[len(pui.posts)-1]
+		err := postUI.SetupPostUI(post, nil, pui.postsBox)
 		if err != nil {
 			log.Println(err)
 		}
-		pui.posts = append(pui.posts, postUI)
 
 		postUI.CommentsButtonClicked = func(id int64) {
 			if pui.CommentButtonClicked != nil {

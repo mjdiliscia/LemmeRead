@@ -14,7 +14,7 @@ import (
 	"go.elara.ws/go-lemmy"
 )
 
-const MAX_BRIEF_DESC_LEN int = 100;
+const MAX_BRIEF_DESC_LEN int = 500;
 
 type PostUI struct {
 	Parent *MainWindow
@@ -30,13 +30,13 @@ type PostUI struct {
 	timestamp *gtk.Label
 	link *gtk.LinkButton
 	image *gtk.Image
-	description *gtk.TextView
+	description *gtk.Label
 	votes *gtk.SpinButton
 	commentsBox *gtk.Box
 	commentsButton *gtk.Button
 }
 
-func NewPostUI(post lemmy.PostView, comments []lemmy.CommentView, box *gtk.Box) (pui PostUI, err error) {
+func (pui *PostUI) SetupPostUI(post lemmy.PostView, comments []lemmy.CommentView, box *gtk.Box) (err error) {
 	_, err = pui.buildAndSetReferences()
 	if err != nil {
 		return
@@ -65,7 +65,10 @@ func (pui *PostUI) buildAndSetReferences() (builder *gtk.Builder, err error) {
 	if err != nil {
 		return
 	}
-	utils.ApplyStyle(&pui.post.Widget)
+
+	utils.SetWidgetProperty(builder, "card", func(card *gtk.Box) {
+		utils.ApplyStyle(&card.Widget)
+	})
 
 	pui.title, err = utils.GetUIObject[gtk.Label](builder, "title")
 	if err != nil {
@@ -104,7 +107,7 @@ func (pui *PostUI) buildAndSetReferences() (builder *gtk.Builder, err error) {
 		return
 	}
 
-	pui.description, err = utils.GetUIObject[gtk.TextView](builder, "description")
+	pui.description, err = utils.GetUIObject[gtk.Label](builder, "description")
 	if err != nil {
 		return
 	}
@@ -138,8 +141,9 @@ func (pui *PostUI) fillPostData(post lemmy.PostView, briefDesc bool) {
 		if briefDesc && len(body) > MAX_BRIEF_DESC_LEN {
 			body = body[:MAX_BRIEF_DESC_LEN] + "..."
 		}
-		buffer, _ := pui.description.GetBuffer()
-		buffer.SetText(post.Post.Body.ValueOrZero())
+		pui.description.SetMarkup(utils.MarkdownToLabelMarkup(body))
+	} else {
+		pui.description.Hide()
 	}
 
 	pui.communityName.SetText(post.Community.Title)
@@ -149,13 +153,15 @@ func (pui *PostUI) fillPostData(post lemmy.PostView, briefDesc bool) {
 	pui.votes.SetRange(float64(post.Counts.Score)-1, float64(post.Counts.Score)+1)
 	pui.votes.SetValue(float64(post.Counts.Score))
 
-	if pui.commentsButton != nil {
+	if briefDesc {
 		pui.commentsButton.SetLabel(fmt.Sprintf("%d comments", post.Counts.Comments))
 		pui.commentsButton.Connect("clicked", func() {
 			if pui.CommentsButtonClicked != nil {
 				pui.CommentsButtonClicked(post.Post.ID)
 			}
 		})
+	} else {
+		pui.commentsButton.Hide()
 	}
 
 	if post.Post.ThumbnailURL.IsValid() {

@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"log"
 	"time"
 
 	"github.com/gotk3/gotk3/gdk"
@@ -18,7 +17,7 @@ type CommentUI struct {
 	commentID int64
 	username *gtk.Label
 	timestamp *gtk.Label
-	commentText *gtk.TextView
+	commentText *gtk.Label
 	votes *gtk.SpinButton
 	userImage *gtk.Image
 	foldButton *gtk.Button
@@ -58,7 +57,7 @@ func (cui *CommentUI) buildAndSetReferences() (commentBox *gtk.Box, err error) {
 		return
 	}
 
-	cui.commentText, err = utils.GetUIObject[gtk.TextView](builder, "commentText")
+	cui.commentText, err = utils.GetUIObject[gtk.Label](builder, "commentText")
 	if err != nil {
 		return
 	}
@@ -88,6 +87,7 @@ func (cui *CommentUI) buildAndSetReferences() (commentBox *gtk.Box, err error) {
 		cui.unfoldButton.Show()
 		cui.commentText.Hide()
 		cui.votes.Hide()
+		cui.childCommentsBox.Hide()
 	})
 
 	cui.unfoldButton, err = utils.GetUIObject[gtk.Button](builder, "unfold")
@@ -99,6 +99,7 @@ func (cui *CommentUI) buildAndSetReferences() (commentBox *gtk.Box, err error) {
 		cui.unfoldButton.Hide()
 		cui.commentText.Show()
 		cui.votes.Show()
+		cui.childCommentsBox.Show()
 	})
 
 	cui.childCommentsBox, err = utils.GetUIObject[gtk.Box](builder, "children")
@@ -117,12 +118,7 @@ func (cui *CommentUI) fillCommentData(comment lemmy.CommentView) {
 	cui.username.SetText(comment.Creator.DisplayName.ValueOr(comment.Creator.Name))
 	cui.timestamp.SetText(utils.GetNiceDuration(time.Since(comment.Comment.Published)))
 
-	buffer, err := cui.commentText.GetBuffer()
-	if err != nil {
-		log.Println(err)
-	} else {
-		buffer.SetText(comment.Comment.Content)
-	}
+	cui.commentText.SetMarkup(utils.MarkdownToLabelMarkup(comment.Comment.Content))
 
 	cui.votes.SetRange(float64(comment.Counts.Score)-1, float64(comment.Counts.Score)+1)
 	cui.votes.SetValue(float64(comment.Counts.Score))

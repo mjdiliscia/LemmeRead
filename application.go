@@ -43,10 +43,11 @@ func (app* Application) onActivate() {
 		log.Panicf("Couldn't login to lemmy: %s", err)
 	}
 
-	app.Window, err = ui.NewMainWindow()
+	err = app.Window.SetupMainWindow()
 	if err != nil {
 		log.Panic(err)
 	}
+	app.Window.Window.SetApplication(app.GtkApplication)
 
 	var page int64 = 0
 	posts, err := app.PostsLemmyClient(page)
@@ -73,8 +74,6 @@ func (app* Application) onActivate() {
 		}
 		app.Window.OpenComments(post, comments)
 	}
-
-	log.Println("All done")
 }
 
 func (app *Application) SetupLemmyClient(url string) (err error) {
