@@ -101,6 +101,10 @@ func (am *AppModel) RetrieveComments(postID int64, callback func(error)) {
 			PostID: lemmy.NewOptional(am.KnownPosts[postID].Post.ID),
 			Limit: lemmy.NewOptional(am.KnownPosts[postID].Counts.Comments),
 		})
+		if err != nil {
+			callInMain(func() error {return err}, callback)
+			return
+		}
 		callInMain(func() error {
 			if post, ok := am.KnownPosts[postID]; ok {
 				err := post.AddComments(response.Comments, err)

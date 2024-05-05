@@ -3,8 +3,6 @@ package ui
 import (
 	"fmt"
 	"log"
-	"slices"
-	"strings"
 	"time"
 
 	"github.com/gotk3/gotk3/gtk"
@@ -35,7 +33,7 @@ type PostUI struct {
 	commentsButton *gtk.Button
 }
 
-func (pui *PostUI) SetupPostUI(post model.PostModel, comments []model.CommentModel, box *gtk.Box) (err error) {
+func (pui *PostUI) SetupPostUI(post model.PostModel, comments []*model.CommentModel, box *gtk.Box) (err error) {
 	_, err = pui.buildAndSetReferences()
 	if err != nil {
 		return
@@ -178,34 +176,26 @@ func (pui *PostUI) fillPostData(post model.PostModel, briefDesc bool) {
 	}
 }
 
-func (pui *PostUI) buildComments(inComments []model.CommentModel) {
-	comments := inComments[:]
-	slices.SortFunc(comments, func(a model.CommentModel, b model.CommentModel) int {
-		return len(strings.Split(a.Comment.Path, ".")) - len(strings.Split(b.Comment.Path, "."))
-	})
-	commentMap := make(map[string]CommentUI, len(comments))
-	pui.CommentUIs = make(map[int64]CommentUI, len(comments))
-	for _, comment := range(comments) {
-		var err error
-		pui.CommentUIs[comment.Comment.ID], err = NewCommentUI(comment)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		commentUI := pui.CommentUIs[comment.Comment.ID]
-
-		commentMap[comment.Comment.Path] = commentUI
-		parent := strings.Replace(comment.Comment.Path, fmt.Sprintf(".%d", comment.Comment.ID), "", 1)
-		if parent == "0" {
-			pui.commentsBox.PackStart(commentUI.CommentBox, true, false, 5)
-		} else if parentCommentUI, ok := commentMap[parent]; ok {
-			parentCommentUI.AddChildComment(commentUI)
-		} else {
-			log.Printf("Couldn't find %s", parent)
-		}
-	}
+func (pui *PostUI) buildComments(inComments []*model.CommentModel) {
+	addCommentsTo(pui.commentsBox, inComments)
 
 	newImage, _ := gtk.ImageNew()
 	pui.commentsBox.PackStart(newImage, true, true, 0)
 	newImage.SetVExpand(true)
+}
+
+func addCommentsTo(box *gtk.Box, comments []*model.CommentModel) {
+	for _, comment := range(comments) {
+		log.Printf("Adding comment %d", comment.Comment.ID)
+		commentUI, err := NewCommentUI(*comment)
+		if err != nil {
+			log.Printf("Error creating comment UI for %d", comment.Comment.ID)
+			return
+		}
+		box.PackStart(commentUI.CommentBox, true, false, 5)
+		if len(comment.ChildComments) > 0 {
+			log.Printf("%d has %d children", comment.Comment.ID, len(comment.ChildComments))
+			addCommentsTo(commentUI.childCommentsBox, comment.ChildComments)
+		}
+	}
 }

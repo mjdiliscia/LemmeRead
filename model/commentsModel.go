@@ -8,5 +8,5 @@ import (
 type CommentModel struct {
 	lemmy.CommentView
 	UserIcon gdk.Pixbuf
-	ChildComments []CommentModel
+	ChildComments []*CommentModel
 }

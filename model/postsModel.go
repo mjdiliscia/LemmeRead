@@ -15,7 +15,9 @@ type PostModel struct {
 	lemmy.PostView
 	Image *gdk.Pixbuf
 	CommunityIcon *gdk.Pixbuf
-	Comments []CommentModel
+	Comments []*CommentModel
+
+	commentHolder []CommentModel
 }
 
 func (pm *PostModel) Init(callback func(error)) {
@@ -40,12 +42,23 @@ func (pm *PostModel) AddComments(comments []lemmy.CommentView, err error) error 
 
 	commentMap := make(map[string]*CommentModel, len(comments))
 	for _, comment := range(comments) {
+		log.Printf("Processing comment with path %s...", comment.Comment.Path)
+		if slices.IndexFunc(pm.commentHolder, func(c CommentModel) bool { return comment.Comment.ID == c.Comment.ID }) >= 0 {
+			log.Printf("Comment %d already known, skipping.", comment.Comment.ID)
+			continue
+		}
+
+		pm.commentHolder = append(pm.commentHolder, CommentModel{CommentView: comment})
+		commentPtr := &pm.commentHolder[len(pm.commentHolder)-1]
+		commentMap[comment.Comment.Path] = commentPtr
+
 		parent := strings.Replace(comment.Comment.Path, fmt.Sprintf(".%d", comment.Comment.ID), "", 1)
 		if parent == "0" {
-			pm.Comments = append(pm.Comments, CommentModel{CommentView: comment})
-			commentMap[comment.Comment.Path] = &pm.Comments[len(pm.Comments)-1]
+			log.Println("is root comment.")
+			pm.Comments = append(pm.Comments, commentPtr)
 		} else if parentComment, ok := commentMap[parent]; ok {
-			parentComment.ChildComments = append(parentComment.ChildComments, CommentModel{CommentView: comment})
+			log.Println("is child comment.")
+			parentComment.ChildComments = append(parentComment.ChildComments, commentPtr)
 		} else {
 			log.Printf("Couldn't find %s", parent)
 		}
