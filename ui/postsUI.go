@@ -5,7 +5,7 @@ import (
 	"slices"
 
 	"github.com/gotk3/gotk3/gtk"
-	"go.elara.ws/go-lemmy"
+	"github.com/mjdiliscia/LemmeRead/model"
 )
 
 type PostsUI struct {
@@ -22,12 +22,14 @@ func (pui *PostsUI) SetupPostsUI(box *gtk.Box) (err error) {
 	return
 }
 
-func (pui *PostsUI) FillPostsData(posts []lemmy.PostView) {
+func (pui *PostsUI) FillPostsData(posts []model.PostModel) {
 	for _, post := range posts {
 		if slices.Index(pui.shownPosts, post.Post.ID) != -1 {
+			log.Printf("Post %d already being shown, skipping.", post.Post.ID)
 			continue
 		}
 
+		log.Printf("Adding post %d to PostsUI...", post.Post.ID)
 		pui.shownPosts = append(pui.shownPosts, post.Post.ID)
 		pui.posts = append(pui.posts, PostUI{})
 		postUI := pui.posts[len(pui.posts)-1]
@@ -41,5 +43,6 @@ func (pui *PostsUI) FillPostsData(posts []lemmy.PostView) {
 				pui.CommentButtonClicked(id)
 			}
 		}
+		log.Printf("Added post %d to PostUI.", post.Post.ID)
 	}
 }

@@ -3,19 +3,32 @@ package model
 import (
 	"context"
 	"fmt"
+	"log"
+	"slices"
 
 	"github.com/gotk3/gotk3/glib"
 	"go.elara.ws/go-lemmy"
 )
 
+type MainView interface {
+    OnNewPosts()
+}
+
+
 type AppModel struct {
 	KnownPosts map[int64]PostModel
+	View MainView
 
+	lastAddedPosts []int64
+	nextPageToRetrieve int64
+	pendingProcesses []string
 	lemmyClient *lemmy.Client
 	lemmyContext context.Context
 }
 
-func (am *AppModel) Init() {
+func (am *AppModel) Init(view MainView) {
+	am.View = view
+	am.nextPageToRetrieve = 0
 	am.KnownPosts = make(map[int64]PostModel)
 }
 
@@ -39,13 +52,37 @@ func (am *AppModel) InitializeLemmyClient(url string, username string, password 
 	}()
 }
 
+func (am *AppModel) RetrieveMorePosts(callback func(error)) {
+	am.RetrievePosts(am.nextPageToRetrieve, func(err error) {
+		if err == nil {
+			am.nextPageToRetrieve++
+		}
+		callback(err)
+	})
+}
+
 func (am *AppModel) RetrievePosts(page int64, callback func(error)) {
+	if len(am.pendingProcesses) > 0 {
+		callback(fmt.Errorf("Already retrieving posts, ignoring."))
+		return
+	}
+
+	log.Printf("Retrieving posts from page %d...", page)
+
+	processID := fmt.Sprintf("list%d", page)
+	am.pendingProcesses = append(am.pendingProcesses, processID)
 	go func() {
 		response, err := am.lemmyClient.Posts(am.lemmyContext, lemmy.GetPosts{
 			Type: lemmy.NewOptional(lemmy.ListingTypeSubscribed),
 			Page: lemmy.NewOptional(page+1),
 		})
-		callInMain(func() error { return am.addPosts(response.Posts, err) }, callback)
+		log.Printf("Posts from page %d retrieval completed. Error: %s", page, err)
+		callInMain(func() error { return am.addPosts(response.Posts, err) }, func(err error) {
+			processIndex := slices.Index(am.pendingProcesses, processID)
+			am.pendingProcesses = append(am.pendingProcesses[:processIndex], am.pendingProcesses[processIndex+1:]...)
+
+			callback(err)
+		})
 	}()
 }
 
@@ -58,24 +95,63 @@ func (am *AppModel) RetrievePost(postId int64, callback func(error)) {
 	}()
 }
 
-func (am *AppModel) RetrieveComments(post *PostModel, callback func(error)) {
+func (am *AppModel) RetrieveComments(postID int64, callback func(error)) {
 	go func() {
 		response, err := am.lemmyClient.Comments(am.lemmyContext, lemmy.GetComments{
-			PostID: lemmy.NewOptional(post.Post.ID),
-			Limit: lemmy.NewOptional(post.Counts.Comments),
+			PostID: lemmy.NewOptional(am.KnownPosts[postID].Post.ID),
+			Limit: lemmy.NewOptional(am.KnownPosts[postID].Counts.Comments),
 		})
-		callInMain(func() error { return post.AddComments(response.Comments, err) }, callback)
+		callInMain(func() error {
+			if post, ok := am.KnownPosts[postID]; ok {
+				err := post.AddComments(response.Comments, err)
+				am.KnownPosts[postID] = post
+				return err
+			} else {
+				keys := make([]int64, len(am.KnownPosts))
+				i := 0
+				for key := range am.KnownPosts {
+					keys[i] = key
+					i++
+				}
+				log.Printf("Known posts: %v", keys)
+				return fmt.Errorf("Post %d couldn't be found in local DB", postID)
+			}
+		}, callback)
 	}()
+}
+
+func (am *AppModel) ConsumeLastAddedPosts() []int64 {
+	defer func(){ am.lastAddedPosts = make([]int64, 0) }()
+	return am.lastAddedPosts
 }
 
 func (am *AppModel) addPosts(posts []lemmy.PostView, err error) error {
 	if err != nil {
+		log.Println("addPost called with errors, ignoring call.")
 		return err
 	}
 
+	log.Println("Adding new posts to local DB.")
 	for _, post := range(posts) {
 		if _, ok := am.KnownPosts[post.Post.ID]; !ok {
-			am.KnownPosts[post.Post.ID] = PostModel{PostView: post}
+			postModel := PostModel{PostView: post}
+			postID := post.Post.ID
+
+			processID := fmt.Sprintf("post%d", postID)
+			am.pendingProcesses = append(am.pendingProcesses, processID)
+			postModel.Init(func (err error) {
+				processIndex := slices.Index(am.pendingProcesses, processID)
+				am.pendingProcesses = append(am.pendingProcesses[:processIndex], am.pendingProcesses[processIndex+1:]...)
+
+				if err != nil {
+					log.Printf("Something went wrong with post %d, skipping: %s", postID, err)
+					return
+				}
+				am.KnownPosts[postID] = postModel
+				am.lastAddedPosts = append(am.lastAddedPosts, postID)
+				log.Printf("Added new post %d to %p DB with %d posts.", postID, &am.KnownPosts, len(am.KnownPosts))
+				am.View.OnNewPosts()
+			})
 		}
 	}
 	return err

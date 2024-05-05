@@ -7,11 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/mjdiliscia/LemmeRead/data"
+	"github.com/mjdiliscia/LemmeRead/model"
 	"github.com/mjdiliscia/LemmeRead/utils"
-	"go.elara.ws/go-lemmy"
 )
 
 const MAX_BRIEF_DESC_LEN int = 500;
@@ -36,7 +35,7 @@ type PostUI struct {
 	commentsButton *gtk.Button
 }
 
-func (pui *PostUI) SetupPostUI(post lemmy.PostView, comments []lemmy.CommentView, box *gtk.Box) (err error) {
+func (pui *PostUI) SetupPostUI(post model.PostModel, comments []model.CommentModel, box *gtk.Box) (err error) {
 	_, err = pui.buildAndSetReferences()
 	if err != nil {
 		return
@@ -133,7 +132,7 @@ func (pui *PostUI) buildAndSetReferences() (builder *gtk.Builder, err error) {
 	return
 }
 
-func (pui *PostUI) fillPostData(post lemmy.PostView, briefDesc bool) {
+func (pui *PostUI) fillPostData(post model.PostModel, briefDesc bool) {
 	pui.title.SetText(post.Post.Name)
 
 	if post.Post.Body.IsValid() {
@@ -164,28 +163,24 @@ func (pui *PostUI) fillPostData(post lemmy.PostView, briefDesc bool) {
 		pui.commentsButton.Hide()
 	}
 
-	if post.Post.ThumbnailURL.IsValid() {
-		utils.LoadPixmapFromURL(post.Post.ThumbnailURL.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
-			utils.SetDirectImage(pui.image, pixbuf, [2]int{maxPostImageSize, maxPostImageSize}, err)
-		})
-	}
-
 	urlIsThumbURL := post.Post.ThumbnailURL.IsValid() && post.Post.URL.ValueOrZero() == post.Post.ThumbnailURL.ValueOrZero()
 	if post.Post.URL.IsValid() && !urlIsThumbURL {
 		pui.link.SetUri(post.Post.URL.ValueOrZero())
 		pui.link.Show()
 	}
 
-	if post.Community.Icon.IsValid() {
-		utils.LoadPixmapFromURL(post.Community.Icon.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
-			utils.SetDirectImage(pui.communityIcon, pixbuf, [2]int{communityIconSize, communityIconSize}, err)
-		})
+	if post.Image != nil {
+		utils.SetDirectImage(pui.image, post.Image, [2]int{maxPostImageSize, maxPostImageSize}, nil)
+	}
+
+	if post.CommunityIcon != nil {
+		utils.SetDirectImage(pui.communityIcon, post.CommunityIcon, [2]int{communityIconSize, communityIconSize}, nil)
 	}
 }
 
-func (pui *PostUI) buildComments(inComments []lemmy.CommentView) {
+func (pui *PostUI) buildComments(inComments []model.CommentModel) {
 	comments := inComments[:]
-	slices.SortFunc(comments, func(a lemmy.CommentView, b lemmy.CommentView) int {
+	slices.SortFunc(comments, func(a model.CommentModel, b model.CommentModel) int {
 		return len(strings.Split(a.Comment.Path, ".")) - len(strings.Split(b.Comment.Path, "."))
 	})
 	commentMap := make(map[string]CommentUI, len(comments))

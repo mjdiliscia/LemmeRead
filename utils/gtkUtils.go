@@ -16,7 +16,7 @@ import (
 func GetUIObject[OType any](builder *gtk.Builder, objectId string) (object *OType, err error) {
 	obj, err := builder.GetObject(objectId)
 	if err != nil {
-		fmt.Errorf("Couldn't find object of name '%s' (asked type was %s): %s", objectId, reflect.TypeOf(object).Name(), err)
+		err = fmt.Errorf("Couldn't find object of name '%s' (asked type was %s): %s", objectId, reflect.TypeOf(object).Name(), err)
 		return
 	}
 	object, ok := any(obj).(*OType)

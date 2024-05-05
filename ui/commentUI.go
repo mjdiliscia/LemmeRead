@@ -6,8 +6,8 @@ import (
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/mjdiliscia/LemmeRead/data"
+	"github.com/mjdiliscia/LemmeRead/model"
 	"github.com/mjdiliscia/LemmeRead/utils"
-	"go.elara.ws/go-lemmy"
 )
 
 type CommentUI struct {
@@ -25,7 +25,7 @@ type CommentUI struct {
 	childCommentsBox *gtk.Box
 }
 
-func NewCommentUI(comment lemmy.CommentView) (cui CommentUI, err error) {
+func NewCommentUI(comment model.CommentModel) (cui CommentUI, err error) {
 	_, err = cui.buildAndSetReferences()
 	if err != nil {
 		return
@@ -113,7 +113,7 @@ func (cui *CommentUI) buildAndSetReferences() (commentBox *gtk.Box, err error) {
 	return
 }
 
-func (cui *CommentUI) fillCommentData(comment lemmy.CommentView) {
+func (cui *CommentUI) fillCommentData(comment model.CommentModel) {
 	cui.commentID = comment.Comment.ID
 	cui.username.SetText(comment.Creator.DisplayName.ValueOr(comment.Creator.Name))
 	cui.timestamp.SetText(utils.GetNiceDuration(time.Since(comment.Comment.Published)))

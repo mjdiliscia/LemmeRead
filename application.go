@@ -7,6 +7,7 @@ import (
 
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
+	"github.com/mjdiliscia/LemmeRead/model"
 	"github.com/mjdiliscia/LemmeRead/ui"
 	"go.elara.ws/go-lemmy"
 )
@@ -18,6 +19,7 @@ type Application struct {
 	LemmyContext context.Context
 	GtkApplication *gtk.Application
 	Window ui.MainWindow
+	Model model.AppModel
 }
 
 func NewApplication() (app Application, err error) {
@@ -34,45 +36,45 @@ func NewApplication() (app Application, err error) {
 func (app* Application) onActivate() {
 	var err error
 
-	err = app.SetupLemmyClient("https://lemm.ee")
-	if err != nil {
-		log.Panicf("Couldn't connect to lemmy server: %s", err)
-	}
-	err = app.LoginLemmyClient("mjdiliscia", "qNZ^jyj2q.0@", "")
-	if err != nil {
-		log.Panicf("Couldn't login to lemmy: %s", err)
-	}
-
-	err = app.Window.SetupMainWindow()
+	log.Println("About to setup MainWindow...")
+	err = app.Window.SetupMainWindow(&app.Model)
 	if err != nil {
 		log.Panic(err)
 	}
 	app.Window.Window.SetApplication(app.GtkApplication)
+	log.Println("MainWindow setup finished.")
 
-	var page int64 = 0
-	posts, err := app.PostsLemmyClient(page)
-	if err != nil {
-		log.Panic(err)
-	}
-	app.Window.PostList.FillPostsData(posts)
-	app.Window.OnPostListBottomReached = func() {
-		page++
-		posts, err := app.PostsLemmyClient(page)
+	app.Model.Init(&app.Window)
+	log.Println("About to initialize and login to Lemmy...")
+	app.Model.InitializeLemmyClient("https://lemm.ee", "mjdiliscia", "qNZ^jyj2q.0@", func(err error) {
 		if err != nil {
 			log.Panic(err)
 		}
-		app.Window.PostList.FillPostsData(posts)
+		log.Println("Initialization finished.")
+		log.Println("About to retrieve first page of posts...")
+		app.Model.RetrieveMorePosts(func(err error) {
+			if err != nil {
+				log.Panic(err)
+			}
+			log.Println("Inital posts retrieval finished.")
+		})
+	})
+
+	app.Window.OnPostListBottomReached = func() {
+		app.Model.RetrieveMorePosts(func(err error) {
+			if err != nil {
+				log.Println(err)
+			}
+		})
 	}
 	app.Window.PostList.CommentButtonClicked = func (id int64) {
-		post, err := app.PostLemmyClient(id)
-		if err != nil {
-			log.Panic(err)
-		}
-		comments, err := app.CommentsLemmyClient(id)
-		if err != nil {
-			log.Panic(err)
-		}
-		app.Window.OpenComments(post, comments)
+		app.Model.RetrieveComments(id, func(err error) {
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			app.Window.OpenComments(id)
+		})
 	}
 }
 

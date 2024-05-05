@@ -34,7 +34,6 @@ func (pm *PostModel) AddComments(comments []lemmy.CommentView, err error) error 
 	if err != nil {
 		return err
 	}
-
 	slices.SortFunc(comments, func(a lemmy.CommentView, b lemmy.CommentView) int {
 		return len(strings.Split(a.Comment.Path, ".")) - len(strings.Split(b.Comment.Path, "."))
 	})

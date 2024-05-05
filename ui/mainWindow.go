@@ -5,8 +5,8 @@ import (
 
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/mjdiliscia/LemmeRead/data"
+	"github.com/mjdiliscia/LemmeRead/model"
 	"github.com/mjdiliscia/LemmeRead/utils"
-	"go.elara.ws/go-lemmy"
 )
 
 const (
@@ -17,6 +17,7 @@ const (
 
 type MainWindow struct {
 	Window *gtk.ApplicationWindow
+	Model *model.AppModel
 	PostList PostsUI
 	Post *PostUI
 	OnPostListBottomReached func()
@@ -28,7 +29,9 @@ type MainWindow struct {
 	postScroll *gtk.ScrolledWindow
 }
 
-func (win *MainWindow) SetupMainWindow() (err error) {
+func (win *MainWindow) SetupMainWindow(appModel *model.AppModel) (err error) {
+	win.Model = appModel
+
 	builder, err := win.buildAndSetReferences()
 	if err != nil {
 		return
@@ -93,9 +96,9 @@ func (win *MainWindow) buildAndSetReferences() (builder *gtk.Builder, err error)
 	return
 }
 
-func (win *MainWindow) OpenComments(post lemmy.PostView, comments []lemmy.CommentView) {
+func (win *MainWindow) OpenComments(postID int64) {
 	win.Post = &PostUI{}
-	err := win.Post.SetupPostUI(post, comments, win.postBox)
+	err := win.Post.SetupPostUI(win.Model.KnownPosts[postID], win.Model.KnownPosts[postID].Comments, win.postBox)
 	if err != nil {
 		log.Println(err)
 	}
@@ -108,4 +111,17 @@ func (win *MainWindow) CloseComments() {
 	win.Post = nil
 	win.stack.SetTransitionType(gtk.STACK_TRANSITION_TYPE_SLIDE_RIGHT)
 	win.stack.SetVisibleChild(&win.postListScroll.Container)
+}
+
+func (win *MainWindow) OnNewPosts() {
+	lastAddedPostIDs := win.Model.ConsumeLastAddedPosts()
+	log.Printf("Adding %d posts to MainWindow...", len(lastAddedPostIDs))
+
+	posts := make([]model.PostModel, 0, len(lastAddedPostIDs))
+	for _, postID := range(lastAddedPostIDs) {
+		posts = append(posts, win.Model.KnownPosts[postID])
+	}
+	win.PostList.FillPostsData(posts)
+
+	log.Println("New posts added to MainWindow.")
 }
