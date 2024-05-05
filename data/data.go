@@ -2,6 +2,9 @@ package data
 
 import _ "embed"
 
+//go:embed login.glade
+var LoginUI []byte
+
 //go:embed mainWindow.glade
 var MainWindowUI []byte
 
