@@ -20,7 +20,8 @@ type MainWindow struct {
 	Model *model.AppModel
 	PostList PostsUI
 	Post *PostUI
-	OnPostListBottomReached func()
+	PostListBottomReached func()
+	CloseCommentsClicked func()
 
 	stack *gtk.Stack
 	postListBox *gtk.Box
@@ -43,14 +44,16 @@ func (win *MainWindow) SetupMainWindow(appModel *model.AppModel) (err error) {
 	}
 
 	win.postListScroll.Connect("edge-reached", func(scroll *gtk.ScrolledWindow, position gtk.PositionType) {
-		if position == gtk.POS_BOTTOM && win.OnPostListBottomReached != nil { win.OnPostListBottomReached() }
+		if position == gtk.POS_BOTTOM && win.PostListBottomReached != nil { win.PostListBottomReached() }
 	})
 
 	closeCommentsButton, err := utils.GetUIObject[gtk.Button](builder, "closeComments")
 	if err != nil {
 		return
 	}
-	closeCommentsButton.Connect("clicked", func() { win.CloseComments() })
+	closeCommentsButton.Connect("clicked", func() {
+		if win.CloseCommentsClicked != nil { win.CloseCommentsClicked() }
+	})
 
 	win.Window.Show()
 

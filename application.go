@@ -7,6 +7,7 @@ import (
 
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
+	"github.com/mjdiliscia/LemmeRead/controller"
 	"github.com/mjdiliscia/LemmeRead/model"
 	"github.com/mjdiliscia/LemmeRead/ui"
 	"go.elara.ws/go-lemmy"
@@ -20,6 +21,7 @@ type Application struct {
 	GtkApplication *gtk.Application
 	Window ui.MainWindow
 	Model model.AppModel
+	Controller controller.PostsController
 }
 
 func NewApplication() (app Application, err error) {
@@ -35,6 +37,7 @@ func NewApplication() (app Application, err error) {
 
 func (app* Application) onActivate() {
 	app.initMainWindow()
+	app.setupControllers()
 	app.lemmyStartup()
 }
 
@@ -46,23 +49,10 @@ func (app *Application) initMainWindow() {
 	}
 	app.Window.Window.SetApplication(app.GtkApplication)
 	log.Println("MainWindow setup finished.")
+}
 
-	app.Window.OnPostListBottomReached = func() {
-		app.Model.RetrieveMorePosts(func(err error) {
-			if err != nil {
-				log.Println(err)
-			}
-		})
-	}
-	app.Window.PostList.CommentButtonClicked = func (id int64) {
-		app.Model.RetrieveComments(id, func(err error) {
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			app.Window.OpenComments(id)
-		})
-	}
+func (app *Application) setupControllers() {
+	app.Controller.Init(&app.Window, &app.Model)
 }
 
 func (app *Application) lemmyStartup() {

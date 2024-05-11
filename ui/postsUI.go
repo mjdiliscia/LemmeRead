@@ -9,7 +9,7 @@ import (
 )
 
 type PostsUI struct {
-	CommentButtonClicked func(int64)
+	CommentClicked func(int64)
 
 	postsBox *gtk.Box
 	posts []PostUI
@@ -39,8 +39,8 @@ func (pui *PostsUI) FillPostsData(posts []model.PostModel) {
 		}
 
 		postUI.CommentsButtonClicked = func(id int64) {
-			if pui.CommentButtonClicked != nil {
-				pui.CommentButtonClicked(id)
+			if pui.CommentClicked != nil {
+				pui.CommentClicked(id)
 			}
 		}
 		log.Printf("Added post %d to PostUI.", post.Post.ID)
