@@ -161,9 +161,8 @@ func (pv *PostView) fillPostData(post model.PostModel, briefDesc bool) {
 		pv.commentsButton.Hide()
 	}
 
-	urlIsThumbURL := post.Post.ThumbnailURL.IsValid() && post.Post.URL.ValueOrZero() == post.Post.ThumbnailURL.ValueOrZero()
-	if post.Post.URL.IsValid() && !urlIsThumbURL {
-		pv.link.SetUri(post.Post.URL.ValueOrZero())
+	if !post.IsImagePost && post.Link != "" {
+		pv.link.SetUri(post.Link)
 		pv.link.Show()
 	}
 

@@ -70,7 +70,7 @@ func (am *AppModel) RetrievePosts(page int64, callback func(error)) {
 			Type: lemmy.NewOptional(lemmy.ListingTypeSubscribed),
 			Page: lemmy.NewOptional(page+1),
 		})
-		log.Printf("Posts from page %d retrieval completed. Error: %s", page, err)
+		log.Printf("Posts from page %d retrieval completed. Error: %v", page, err)
 		callInMain(func() error { return am.addPosts(response.Posts, err) }, func(err error) {
 			processIndex := slices.Index(am.pendingProcesses, processID)
 			am.pendingProcesses = append(am.pendingProcesses[:processIndex], am.pendingProcesses[processIndex+1:]...)
@@ -129,7 +129,7 @@ func (am *AppModel) addPosts(posts []lemmy.PostView, err error) error {
 		return err
 	}
 
-	log.Println("Adding new posts to local DB.")
+	log.Printf("Adding %d new posts to local DB.", len(posts))
 	for _, post := range(posts) {
 		if _, ok := am.KnownPosts[post.Post.ID]; !ok {
 			postModel := PostModel{PostView: post}

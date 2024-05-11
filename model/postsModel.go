@@ -13,23 +13,32 @@ import (
 
 type PostModel struct {
 	lemmy.PostView
-	Image *gdk.Pixbuf
+	IsImagePost   bool
+	Link          string
+	Image         *gdk.Pixbuf
 	CommunityIcon *gdk.Pixbuf
-	Comments []*CommentModel
+	Comments      []*CommentModel
 
 	commentHolder []CommentModel
 }
 
+type PMData struct {
+	str    string
+	pixbuf *gdk.Pixbuf
+}
+
 func (pm *PostModel) Init(callback func(error)) {
-	pm.loadPixmapAndContinue(pm.Post.ThumbnailURL, func(pixbuf *gdk.Pixbuf) {
-		pm.Image = pixbuf
-	}, func() {
-		pm.loadPixmapAndContinue(pm.Community.Icon, func(pixbuf *gdk.Pixbuf) {
-			pm.CommunityIcon = pixbuf
-		}, func() {
-			callback(nil)
-		})
+	var taskSequence *utils.TaskSequence[PMData]
+	taskSequence = utils.NewTaskSequence[PMData](func() {
+		taskSequence = nil
+		callback(nil)
 	})
+
+	taskSequence.Add(pm.getMimetypeTask, pm.processMimetypeTask)
+	taskSequence.Add(pm.getPostImageTask(), pm.setImageTask)
+	taskSequence.Add(pm.getPixbufTask(pm.Community.Icon), pm.setCommunityIconTask)
+
+	taskSequence.Execute()
 }
 
 func (pm *PostModel) AddComments(comments []lemmy.CommentView, err error) error {
@@ -41,7 +50,7 @@ func (pm *PostModel) AddComments(comments []lemmy.CommentView, err error) error 
 	})
 
 	commentMap := make(map[string]*CommentModel, len(comments))
-	for _, comment := range(comments) {
+	for _, comment := range comments {
 		log.Printf("Processing comment with path %s...", comment.Comment.Path)
 		if slices.IndexFunc(pm.commentHolder, func(c CommentModel) bool { return comment.Comment.ID == c.Comment.ID }) >= 0 {
 			log.Printf("Comment %d already known, skipping.", comment.Comment.ID)
@@ -67,17 +76,63 @@ func (pm *PostModel) AddComments(comments []lemmy.CommentView, err error) error 
 	return nil
 }
 
-func (pm *PostModel) loadPixmapAndContinue(url lemmy.Optional[string], apply func(pixbuf *gdk.Pixbuf), next func()) {
-	if url.IsValid() {
-		utils.LoadPixmapFromURL(url.ValueOrZero(), func(pb *gdk.Pixbuf, err error) {
-			if err != nil {
-				log.Println(err)
-			} else {
-				apply(pb)
-			}
-			next()
-		})
+func (pm *PostModel) getMimetypeTask() (PMData, error) {
+	if pm.Post.URL.IsValid() {
+		mimetype, err := utils.GetUrlMimetype(pm.Post.URL.ValueOrZero())
+		if err != nil {
+			return PMData{}, err
+		}
+		return PMData{str: mimetype}, err
 	} else {
-		next()
+		return PMData{}, nil
 	}
+}
+
+func (pm *PostModel) processMimetypeTask(data PMData, err error) bool {
+	pm.IsImagePost = strings.Split(data.str, "/")[0] == "image"
+	if !pm.IsImagePost {
+		pm.Link = pm.Post.URL.ValueOrZero()
+	}
+	return true
+}
+
+func (pm *PostModel) getPostImageTask() func() (PMData, error) {
+	var url lemmy.Optional[string]
+	if pm.IsImagePost {
+		url = pm.Post.URL
+	} else {
+		url = pm.Post.ThumbnailURL
+	}
+
+	return pm.getPixbufTask(url)
+}
+
+func (pm *PostModel) getPixbufTask(url lemmy.Optional[string]) func() (PMData, error) {
+	return func() (PMData, error) {
+		if url.IsValid() {
+			pixbuf, err := utils.LoadPixmapFromUrl(url.ValueOrZero())
+			pmdata := PMData{pixbuf: pixbuf}
+			return pmdata, err
+		} else {
+			return PMData{}, nil
+		}
+	}
+}
+
+func (pm *PostModel) setImageTask(data PMData, err error) bool {
+	if err != nil {
+		log.Println(err)
+	} else {
+		pm.Image = data.pixbuf
+	}
+	return true
+}
+
+func (pm *PostModel) setCommunityIconTask(data PMData, err error) bool {
+	if err != nil {
+		log.Println(err)
+	} else {
+		pm.CommunityIcon = data.pixbuf
+	}
+	return true
 }

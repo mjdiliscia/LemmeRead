@@ -124,8 +124,16 @@ func (cv *CommentView) fillCommentData(comment model.CommentModel) {
 	cv.votes.SetValue(float64(comment.Counts.Score))
 
 	if comment.Creator.Avatar.IsValid() {
-		utils.LoadPixmapFromURL(comment.Creator.Avatar.ValueOrZero(), func(pixbuf *gdk.Pixbuf, err error) {
+		var taskSequence *utils.TaskSequence[*gdk.Pixbuf]
+		taskSequence = utils.NewTaskSequence[*gdk.Pixbuf](func() {
+			taskSequence = nil
+		})
+
+		taskSequence.Add(func() (*gdk.Pixbuf, error) {
+			return utils.LoadPixmapFromUrl(comment.Creator.Avatar.ValueOrZero())
+		}, func(pixbuf *gdk.Pixbuf, err error) bool {
 			utils.SetDirectImage(cv.userImage, pixbuf, [2]int{communityIconSize, communityIconSize}, err)
+			return true
 		})
 	}
 }
