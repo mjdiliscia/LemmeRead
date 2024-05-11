@@ -9,7 +9,7 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/mjdiliscia/LemmeRead/controller"
 	"github.com/mjdiliscia/LemmeRead/model"
-	"github.com/mjdiliscia/LemmeRead/ui"
+	"github.com/mjdiliscia/LemmeRead/view"
 	"go.elara.ws/go-lemmy"
 )
 
@@ -19,7 +19,7 @@ type Application struct {
 	LemmyClient *lemmy.Client
 	LemmyContext context.Context
 	GtkApplication *gtk.Application
-	Window ui.MainWindow
+	View view.MainView
 	Model model.AppModel
 	Controller controller.PostsController
 }
@@ -43,20 +43,20 @@ func (app* Application) onActivate() {
 
 func (app *Application) initMainWindow() {
 	log.Println("About to setup MainWindow...")
-	err := app.Window.SetupMainWindow(&app.Model)
+	err := app.View.SetupMainView(&app.Model)
 	if err != nil {
 		log.Panic(err)
 	}
-	app.Window.Window.SetApplication(app.GtkApplication)
+	app.View.Window.SetApplication(app.GtkApplication)
 	log.Println("MainWindow setup finished.")
 }
 
 func (app *Application) setupControllers() {
-	app.Controller.Init(&app.Window, &app.Model)
+	app.Controller.Init(&app.View, &app.Model)
 }
 
 func (app *Application) lemmyStartup() {
-	app.Model.Init(&app.Window)
+	app.Model.Init()
 	log.Println("About to initialize and login to Lemmy...")
 	app.Model.InitializeLemmyClient("https://lemm.ee", "mjdiliscia", "qNZ^jyj2q.0@", func(err error) {
 		if err != nil {

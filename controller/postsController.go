@@ -4,20 +4,20 @@ import (
 	"log"
 
 	"github.com/mjdiliscia/LemmeRead/model"
-	"github.com/mjdiliscia/LemmeRead/ui"
+	"github.com/mjdiliscia/LemmeRead/view"
 )
 
 type PostsController struct {
-	mainWindow *ui.MainWindow
+	mainView *view.MainView
 	appModel *model.AppModel
 }
 
-func (pc *PostsController) Init(mw *ui.MainWindow, am *model.AppModel) {
-	pc.mainWindow = mw
+func (pc *PostsController) Init(mw *view.MainView, am *model.AppModel) {
+	pc.mainView = mw
 	pc.appModel = am
 
 	mw.PostListBottomReached = pc.onPostListBottomReached
-	mw.PostList.CommentClicked = pc.onCommentsClicked
+	mw.PostListView.CommentClicked = pc.onCommentsClicked
 	mw.CloseCommentsClicked = pc.onCloseCommentsClicked
 }
 
@@ -35,10 +35,10 @@ func (pc *PostsController) onCommentsClicked(id int64) {
 			log.Println(err)
 			return
 		}
-		pc.mainWindow.OpenComments(id)
+		pc.mainView.OpenComments(id)
 	})
 }
 
 func (pc *PostsController) onCloseCommentsClicked() {
-	pc.mainWindow.CloseComments()
+	pc.mainView.CloseComments()
 }

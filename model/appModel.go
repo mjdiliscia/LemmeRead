@@ -10,14 +10,9 @@ import (
 	"go.elara.ws/go-lemmy"
 )
 
-type MainView interface {
-    OnNewPosts()
-}
-
-
 type AppModel struct {
 	KnownPosts map[int64]PostModel
-	View MainView
+	NewPosts func()
 
 	lastAddedPosts []int64
 	nextPageToRetrieve int64
@@ -26,8 +21,7 @@ type AppModel struct {
 	lemmyContext context.Context
 }
 
-func (am *AppModel) Init(view MainView) {
-	am.View = view
+func (am *AppModel) Init() {
 	am.nextPageToRetrieve = 0
 	am.KnownPosts = make(map[int64]PostModel)
 }
@@ -154,7 +148,9 @@ func (am *AppModel) addPosts(posts []lemmy.PostView, err error) error {
 				am.KnownPosts[postID] = postModel
 				am.lastAddedPosts = append(am.lastAddedPosts, postID)
 				log.Printf("Added new post %d to %p DB with %d posts.", postID, &am.KnownPosts, len(am.KnownPosts))
-				am.View.OnNewPosts()
+				if am.NewPosts != nil {
+					am.NewPosts()
+				}
 			})
 		}
 	}
