@@ -77,7 +77,22 @@ func ApplyStyle(widget *gtk.Widget) {
 }
 
 func GetNiceDuration(timestamp time.Duration) string {
-	return fmt.Sprintf("%s ago", timestamp.String())
+	switch {
+	case timestamp.Hours() > 24*365:
+		return fmt.Sprintf("%dy ago", int(timestamp.Hours()/24/356))
+	case timestamp.Hours() > 24*30:
+		return fmt.Sprintf("%dm ago", int(timestamp.Hours()/24/30))
+	case timestamp.Hours() > 24*7:
+		return fmt.Sprintf("%dw ago", int(timestamp.Hours()/24/7))
+	case timestamp.Hours() > 24:
+		return fmt.Sprintf("%dd ago", int(timestamp.Hours()/24))
+	case timestamp.Hours() > 1:
+		return fmt.Sprintf("%dh ago", int(timestamp.Hours()))
+	case timestamp.Minutes() > 1:
+		return fmt.Sprintf("%dmin ago", int(timestamp.Minutes()))
+	default:
+		return fmt.Sprintf("%ds", int(timestamp.Seconds()))
+	}
 }
 
 func MarkdownToLabelMarkup(text string) (markup string) {
