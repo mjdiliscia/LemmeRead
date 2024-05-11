@@ -119,8 +119,35 @@ func (am *AppModel) RetrieveComments(postID int64, callback func(error)) {
 }
 
 func (am *AppModel) ConsumeLastAddedPosts() []int64 {
-	defer func(){ am.lastAddedPosts = make([]int64, 0) }()
-	return am.lastAddedPosts
+	var (
+		beginReady int = -1
+		endReady int = -1
+	)
+
+	for idx, postId := range(am.lastAddedPosts) {
+		if postId == 0 && beginReady == -1 {
+			return make([]int64, 0)
+		}
+		if postId > 0 && beginReady == -1 {
+			beginReady = idx
+		}
+		if postId == 0 && endReady == -1 {
+			endReady = idx
+		}
+	}
+
+	if endReady == -1 {
+		endReady = len(am.lastAddedPosts)
+	}
+
+	defer func() {
+		for idx := beginReady; idx < endReady; idx++ {
+			am.lastAddedPosts[idx] = -1
+		}
+	}()
+
+	response := append(make([]int64, 0), am.lastAddedPosts[beginReady:endReady]...)
+	return response
 }
 
 func (am *AppModel) addPosts(posts []lemmy.PostView, err error) error {
@@ -130,10 +157,12 @@ func (am *AppModel) addPosts(posts []lemmy.PostView, err error) error {
 	}
 
 	log.Printf("Adding %d new posts to local DB.", len(posts))
-	for _, post := range(posts) {
+	am.lastAddedPosts = make([]int64, len(posts))
+	for idx, post := range(posts) {
 		if _, ok := am.KnownPosts[post.Post.ID]; !ok {
 			postModel := PostModel{PostView: post}
 			postID := post.Post.ID
+			postIdx := idx
 
 			processID := fmt.Sprintf("post%d", postID)
 			am.pendingProcesses = append(am.pendingProcesses, processID)
@@ -146,7 +175,7 @@ func (am *AppModel) addPosts(posts []lemmy.PostView, err error) error {
 					return
 				}
 				am.KnownPosts[postID] = postModel
-				am.lastAddedPosts = append(am.lastAddedPosts, postID)
+				am.lastAddedPosts[postIdx] = postID
 				log.Printf("Added new post %d to %p DB with %d posts.", postID, &am.KnownPosts, len(am.KnownPosts))
 				if am.NewPosts != nil {
 					am.NewPosts()
