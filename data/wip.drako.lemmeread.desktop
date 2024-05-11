@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+
+Name=LemmeRead
+Comment=Gnome application to read posts and comments from the lemmy network.
+Categories=Network;Feed;
+
+Icon=wip.drako.lemmeread
+Exec=LemmeRead
+Terminal=false

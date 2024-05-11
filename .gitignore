@@ -6,3 +6,4 @@ tmp/
 go.*
 LemmeRead
 *~
+flatpak-dir

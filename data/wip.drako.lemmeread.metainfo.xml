@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>wip.drako.lemmeread</id>
+
+  <name>LemmeRead</name>
+  <summary>Gnome application to read posts and comments from the lemmy network.</summary>
+
+  <metadata_license>CC-BY-SA-4.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+
+  <description>
+    <p>
+      Gnome application to read posts and comments from the lemmy network.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">wip.drako.lemmeread.desktop</launchable>
+</component>
