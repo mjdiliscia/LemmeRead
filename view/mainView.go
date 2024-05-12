@@ -16,18 +16,18 @@ const (
 )
 
 type MainView struct {
-	Window *gtk.ApplicationWindow
-	Model *model.AppModel
-	PostListView PostListView
-	PostView *PostView
+	Window                *gtk.ApplicationWindow
+	Model                 *model.AppModel
+	PostListView          PostListView
+	PostView              *PostView
 	PostListBottomReached func()
-	CloseCommentsClicked func()
+	CloseCommentsClicked  func()
 
-	stack *gtk.Stack
-	postListBox *gtk.Box
+	stack          *gtk.Stack
+	postListBox    *gtk.Box
 	postListScroll *gtk.ScrolledWindow
-	postBox *gtk.Box
-	postScroll *gtk.ScrolledWindow
+	postBox        *gtk.Box
+	postScroll     *gtk.ScrolledWindow
 }
 
 func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
@@ -45,7 +45,9 @@ func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
 	}
 
 	mv.postListScroll.Connect("edge-reached", func(scroll *gtk.ScrolledWindow, position gtk.PositionType) {
-		if position == gtk.POS_BOTTOM && mv.PostListBottomReached != nil { mv.PostListBottomReached() }
+		if position == gtk.POS_BOTTOM && mv.PostListBottomReached != nil {
+			mv.PostListBottomReached()
+		}
 	})
 
 	closeCommentsButton, err := utils.GetUIObject[gtk.Button](builder, "closeComments")
@@ -53,7 +55,9 @@ func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
 		return
 	}
 	closeCommentsButton.Connect("clicked", func() {
-		if mv.CloseCommentsClicked != nil { mv.CloseCommentsClicked() }
+		if mv.CloseCommentsClicked != nil {
+			mv.CloseCommentsClicked()
+		}
 	})
 
 	mv.Window.Show()
@@ -122,7 +126,7 @@ func (mv *MainView) onNewPosts() {
 	log.Printf("Adding %d posts to MainWindow...", len(lastAddedPostIDs))
 
 	posts := make([]model.PostModel, 0, len(lastAddedPostIDs))
-	for _, postID := range(lastAddedPostIDs) {
+	for _, postID := range lastAddedPostIDs {
 		posts = append(posts, mv.Model.KnownPosts[postID])
 	}
 	mv.PostListView.FillPostsData(posts)

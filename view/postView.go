@@ -11,25 +11,25 @@ import (
 	"github.com/mjdiliscia/LemmeRead/utils"
 )
 
-const MAX_BRIEF_DESC_LEN int = 500;
+const MAX_BRIEF_DESC_LEN int = 500
 
 type PostView struct {
-	Parent *MainView
-	CommentViews map[int64]CommentView
+	Parent                *MainView
+	CommentViews          map[int64]CommentView
 	CommentsButtonClicked func(int64)
 
-	parentBox *gtk.Box
-	post *gtk.Box
-	title *gtk.Label
-	communityIcon *gtk.Image
-	communityName *gtk.Label
-	username *gtk.Label
-	timestamp *gtk.Label
-	link *gtk.LinkButton
-	image *gtk.Image
-	description *gtk.Label
-	votes *gtk.SpinButton
-	commentsBox *gtk.Box
+	parentBox      *gtk.Box
+	post           *gtk.Box
+	title          *gtk.Label
+	communityIcon  *gtk.Image
+	communityName  *gtk.Label
+	username       *gtk.Label
+	timestamp      *gtk.Label
+	link           *gtk.LinkButton
+	image          *gtk.Image
+	description    *gtk.Label
+	votes          *gtk.SpinButton
+	commentsBox    *gtk.Box
 	commentsButton *gtk.Button
 }
 
@@ -43,7 +43,7 @@ func (pv *PostView) SetupPostView(post model.PostModel, comments []*model.Commen
 	pv.fillPostData(post, comments == nil)
 	pv.buildComments(comments)
 
-	pv.parentBox.PackStart(pv.post, true, false, 0)
+	pv.parentBox.PackStart(pv.post, false, false, 0)
 
 	return
 }
@@ -84,7 +84,7 @@ func (pv *PostView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 	}
 	utils.ApplyStyle(&pv.communityName.Widget)
 
- 	pv.username, err = utils.GetUIObject[gtk.Label](builder, "username")
+	pv.username, err = utils.GetUIObject[gtk.Label](builder, "username")
 	if err != nil {
 		return
 	}
@@ -184,7 +184,7 @@ func (pv *PostView) buildComments(inComments []*model.CommentModel) {
 }
 
 func addCommentsTo(box *gtk.Box, comments []*model.CommentModel) {
-	for _, comment := range(comments) {
+	for _, comment := range comments {
 		log.Printf("Adding comment %d", comment.Comment.ID)
 		commentView, err := NewCommentView(*comment)
 		if err != nil {
