@@ -7,3 +7,4 @@ go.*
 LemmeRead
 *~
 flatpak-dir
+.flatpak-builder
