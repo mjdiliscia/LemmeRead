@@ -28,13 +28,14 @@ type MainView struct {
 	postListScroll *gtk.ScrolledWindow
 	postBox        *gtk.Box
 	postScroll     *gtk.ScrolledWindow
+	closeComments  *gtk.Button
 }
 
 func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
 	mv.Model = appModel
 	mv.Model.NewPosts = mv.onNewPosts
 
-	builder, err := mv.buildAndSetReferences()
+	_, err = mv.buildAndSetReferences()
 	if err != nil {
 		return
 	}
@@ -50,11 +51,7 @@ func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
 		}
 	})
 
-	closeCommentsButton, err := utils.GetUIObject[gtk.Button](builder, "closeComments")
-	if err != nil {
-		return
-	}
-	closeCommentsButton.Connect("clicked", func() {
+	mv.closeComments.Connect("clicked", func() {
 		if mv.CloseCommentsClicked != nil {
 			mv.CloseCommentsClicked()
 		}
@@ -101,6 +98,11 @@ func (mv *MainView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 		return
 	}
 
+	mv.closeComments, err = utils.GetUIObject[gtk.Button](builder, "closeComments")
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -112,6 +114,8 @@ func (mv *MainView) OpenComments(postID int64) {
 	}
 	mv.stack.SetTransitionType(gtk.STACK_TRANSITION_TYPE_SLIDE_LEFT)
 	mv.stack.SetVisibleChild(&mv.postScroll.Container)
+
+	mv.closeComments.Show()
 }
 
 func (mv *MainView) CloseComments() {
@@ -119,6 +123,8 @@ func (mv *MainView) CloseComments() {
 	mv.PostView = nil
 	mv.stack.SetTransitionType(gtk.STACK_TRANSITION_TYPE_SLIDE_RIGHT)
 	mv.stack.SetVisibleChild(&mv.postListScroll.Container)
+
+	mv.closeComments.Hide()
 }
 
 func (mv *MainView) onNewPosts() {

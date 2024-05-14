@@ -2,16 +2,15 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <object class="GtkImage" id="backImg1">
+  <object class="GtkImage" id="backImg">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="stock">gtk-close</property>
+    <property name="stock">gtk-go-back</property>
   </object>
   <object class="GtkApplicationWindow" id="window">
     <property name="width-request">720</property>
     <property name="height-request">600</property>
     <property name="can-focus">False</property>
-    <property name="title" translatable="yes">Lemme Read</property>
     <child>
       <object class="GtkStack" id="stack">
         <property name="visible">True</property>
@@ -100,60 +99,9 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkBox">
+                      <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="margin-top">10</property>
-                        <property name="margin-bottom">10</property>
-                        <property name="orientation">vertical</property>
-                        <child>
-                          <object class="GtkBox">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <child>
-                              <object class="GtkButton" id="closeComments">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <property name="receives-default">True</property>
-                                <property name="image">backImg1</property>
-                                <property name="relief">none</property>
-                                <property name="always-show-image">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkImage">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                              </object>
-                              <packing>
-                                <property name="expand">True</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -226,6 +174,22 @@
             <property name="title" translatable="yes">page1</property>
             <property name="position">1</property>
           </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">LemmeRead</property>
+        <property name="show-close-button">True</property>
+        <child>
+          <object class="GtkButton" id="closeComments">
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="image">backImg</property>
+            <property name="always-show-image">True</property>
+          </object>
         </child>
       </object>
     </child>
