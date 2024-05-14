@@ -157,6 +157,7 @@ func (pv *PostView) fillPostData(post model.PostModel, briefDesc bool) {
 				pv.CommentsButtonClicked(post.Post.ID)
 			}
 		})
+		pv.commentsBox.Hide()
 	} else {
 		pv.commentsButton.Hide()
 	}
@@ -177,10 +178,6 @@ func (pv *PostView) fillPostData(post model.PostModel, briefDesc bool) {
 
 func (pv *PostView) buildComments(inComments []*model.CommentModel) {
 	addCommentsTo(pv.commentsBox, inComments)
-
-	newImage, _ := gtk.ImageNew()
-	pv.commentsBox.PackStart(newImage, true, true, 0)
-	newImage.SetVExpand(true)
 }
 
 func addCommentsTo(box *gtk.Box, comments []*model.CommentModel) {
