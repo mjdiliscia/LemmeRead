@@ -41,4 +41,3 @@ func GetUrlMimetype(url string) (string, error) {
 
 	return response.Header.Get("Content-Type"), err
 }
-

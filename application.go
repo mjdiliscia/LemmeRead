@@ -16,12 +16,12 @@ import (
 const applicationName = "wip.drako.lemmeread"
 
 type Application struct {
-	LemmyClient *lemmy.Client
-	LemmyContext context.Context
+	LemmyClient    *lemmy.Client
+	LemmyContext   context.Context
 	GtkApplication *gtk.Application
-	View view.MainView
-	Model model.AppModel
-	Controller controller.PostsController
+	View           view.MainView
+	Model          model.AppModel
+	Controller     controller.PostsController
 }
 
 func NewApplication() (app Application, err error) {
@@ -35,7 +35,7 @@ func NewApplication() (app Application, err error) {
 	return app, nil
 }
 
-func (app* Application) onActivate() {
+func (app *Application) onActivate() {
 	app.initMainWindow()
 	app.setupControllers()
 	app.lemmyStartup()

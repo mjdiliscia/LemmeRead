@@ -22,7 +22,7 @@ func (pc *PostsController) Init(mw *view.MainView, am *model.AppModel) {
 }
 
 func (pc *PostsController) onPostListBottomReached() {
-	pc.appModel.RetrieveMorePosts(func (err error) {
+	pc.appModel.RetrieveMorePosts(func(err error) {
 		if err != nil {
 			log.Println(err)
 		}

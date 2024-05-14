@@ -96,24 +96,24 @@ func GetNiceDuration(timestamp time.Duration) string {
 }
 
 func MarkdownToLabelMarkup(text string) (markup string) {
-    // Bold conversion
-    boldRe := regexp.MustCompile(`\*\*(.+?)\*\*`)
-    markup = boldRe.ReplaceAllString(text, fmt.Sprintf("<b>%s</b>", "$1"))
+	// Bold conversion
+	boldRe := regexp.MustCompile(`\*\*(.+?)\*\*`)
+	markup = boldRe.ReplaceAllString(text, fmt.Sprintf("<b>%s</b>", "$1"))
 
-    // Italic conversion
-    italicRe := regexp.MustCompile(`\_(.+?)\_`)
-    markup = italicRe.ReplaceAllString(markup, fmt.Sprintf("<i>%s</i>", "$1"))
+	// Italic conversion
+	italicRe := regexp.MustCompile(`\_(.+?)\_`)
+	markup = italicRe.ReplaceAllString(markup, fmt.Sprintf("<i>%s</i>", "$1"))
 
-    // Strikethrough conversion (basic)
-    strikethroughRe := regexp.MustCompile(`~~(.+?)~~`)
-    markup = strikethroughRe.ReplaceAllString(markup, fmt.Sprintf("<span style=\"text-decoration: line-through\">%s</span>", "$1"))
+	// Strikethrough conversion (basic)
+	strikethroughRe := regexp.MustCompile(`~~(.+?)~~`)
+	markup = strikethroughRe.ReplaceAllString(markup, fmt.Sprintf("<span style=\"text-decoration: line-through\">%s</span>", "$1"))
 
 	// Link conversion
-    linkRe := regexp.MustCompile(`\[(.+?)\]\((.+?)\)`)
+	linkRe := regexp.MustCompile(`\[(.+?)\]\((.+?)\)`)
 	markup = linkRe.ReplaceAllString(markup, fmt.Sprintf("<a href=\"%s\">%s</a>", "$2", "$1"))
 
 	// Textless link conversion
-    textlessLinkRe := regexp.MustCompile(`!\[\]\((.+?)\)`)
+	textlessLinkRe := regexp.MustCompile(`!\[\]\((.+?)\)`)
 	markup = textlessLinkRe.ReplaceAllString(markup, fmt.Sprintf("<a href=\"%s\">%s</a>", "$1", "$1"))
 
 	// & correction

@@ -11,8 +11,8 @@ import (
 type PostListView struct {
 	CommentClicked func(int64)
 
-	postsBox *gtk.Box
-	postViews []PostView
+	postsBox   *gtk.Box
+	postViews  []PostView
 	shownPosts []int64
 }
 

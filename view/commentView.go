@@ -11,17 +11,17 @@ import (
 )
 
 type CommentView struct {
-	CommentBox *gtk.Box
+	CommentBox   *gtk.Box
 	VotesChanged func(int64, int64)
 
-	commentID int64
-	username *gtk.Label
-	timestamp *gtk.Label
-	commentText *gtk.Label
-	votes *gtk.SpinButton
-	userImage *gtk.Image
-	foldButton *gtk.Button
-	unfoldButton *gtk.Button
+	commentID        int64
+	username         *gtk.Label
+	timestamp        *gtk.Label
+	commentText      *gtk.Label
+	votes            *gtk.SpinButton
+	userImage        *gtk.Image
+	foldButton       *gtk.Button
+	unfoldButton     *gtk.Button
 	childCommentsBox *gtk.Box
 }
 
