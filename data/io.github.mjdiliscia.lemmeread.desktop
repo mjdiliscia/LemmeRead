@@ -6,6 +6,6 @@ Name=LemmeRead
 Comment=Gnome application to read posts and comments from the lemmy network.
 Categories=Network;Feed;
 
-Icon=wip.drako.lemmeread
+Icon=io.github.mjdiliscia.lemmeread
 Exec=LemmeRead
 Terminal=false

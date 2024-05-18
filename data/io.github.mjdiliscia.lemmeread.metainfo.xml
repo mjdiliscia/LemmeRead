@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>wip.drako.lemmeread</id>
+  <id>io.github.mjdiliscia.lemmeread</id>
 
   <name>LemmeRead</name>
   <summary>Gnome application to read posts and comments from the lemmy network.</summary>
@@ -14,5 +14,5 @@
     </p>
   </description>
 
-  <launchable type="desktop-id">wip.drako.lemmeread.desktop</launchable>
+  <launchable type="desktop-id">io.github.mjdiliscia.lemmeread.desktop</launchable>
 </component>

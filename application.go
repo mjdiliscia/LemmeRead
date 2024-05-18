@@ -13,7 +13,7 @@ import (
 	"go.elara.ws/go-lemmy"
 )
 
-const applicationName = "wip.drako.lemmeread"
+const applicationName = "io.github.mjdiliscia.lemmeread"
 
 type Application struct {
 	LemmyClient    *lemmy.Client

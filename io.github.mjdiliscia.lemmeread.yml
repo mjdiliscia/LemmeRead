@@ -1,0 +1,27 @@
+id: io.github.mjdiliscia.lemmeread
+runtime: org.gnome.Platform
+runtime-version: '45'
+sdk: org.gnome.Sdk
+command: LemmeRead
+modules:
+  - name: LemmeRead
+    buildsystem: simple
+    build-commands:
+      - install -D LemmeRead /app/bin/LemmeRead
+      - install -D io.github.mjdiliscia.lemmeread.metainfo.xml /app/share/metainfo/io.github.mjdiliscia.lemmeread.metainfo.xml
+      - install -D io.github.mjdiliscia.lemmeread.desktop /app/share/applications/io.github.mjdiliscia.lemmeread.desktop
+      - install -D icon_512.png /app/share/icons/hicolor/512x512/apps/io.github.mjdiliscia.lemmeread.png
+    sources:
+      - type: file
+        path: LemmeRead
+      - type: file
+        path: data/io.github.mjdiliscia.lemmeread.metainfo.xml
+      - type: file
+        path: data/io.github.mjdiliscia.lemmeread.desktop
+      - type: file
+        path: media/icons/icon_512.png
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --share=network
