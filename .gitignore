@@ -3,7 +3,7 @@
 *.log
 tmp/
 
-go.*
+go.sum
 LemmeRead
 *~
 flatpak-dir
