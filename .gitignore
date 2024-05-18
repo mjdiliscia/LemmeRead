@@ -8,3 +8,4 @@ LemmeRead
 *~
 flatpak-dir
 .flatpak-builder
+.dir-locals.el
