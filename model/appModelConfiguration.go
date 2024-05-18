@@ -11,9 +11,13 @@ import (
 )
 
 type AppModelConfiguration struct {
-	Order    PostsOrder  `json:"order"`
-	Filter   PostsFilter `json:"filter"`
+	config   ConfigData
 	filepath string
+}
+
+type ConfigData struct {
+	Order  PostsOrder  `json:"order"`
+	Filter PostsFilter `json:"filter"`
 }
 
 type PostsOrder int
@@ -61,20 +65,20 @@ func NewAppModelConfiguration(configFilename string) (amc AppModelConfiguration)
 }
 
 func (amc *AppModelConfiguration) GetOrder() PostsOrder {
-	return amc.Order
+	return amc.config.Order
 }
 
 func (amc *AppModelConfiguration) SetOrder(order PostsOrder) {
-	amc.Order = order
+	amc.config.Order = order
 	amc.saveConfig()
 }
 
 func (amc *AppModelConfiguration) GetFilter() PostsFilter {
-	return amc.Filter
+	return amc.config.Filter
 }
 
 func (amc *AppModelConfiguration) SetFilter(filter PostsFilter) {
-	amc.Filter = filter
+	amc.config.Filter = filter
 	amc.saveConfig()
 }
 
@@ -91,12 +95,12 @@ func (amc *AppModelConfiguration) loadConfig() (err error) {
 		return
 	}
 
-	err = json.Unmarshal(jsonData, &amc)
+	err = json.Unmarshal(jsonData, &amc.config)
 	return
 }
 
 func (amc *AppModelConfiguration) saveConfig() (err error) {
-	jsonData, err := json.MarshalIndent(&amc, "", "  ")
+	jsonData, err := json.MarshalIndent(&amc.config, "", "  ")
 	if err != nil {
 		return
 	}
