@@ -2,6 +2,7 @@ package view
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/mjdiliscia/LemmeRead/data"
@@ -22,6 +23,8 @@ type MainView struct {
 	PostView              *PostView
 	PostListBottomReached func()
 	CloseCommentsClicked  func()
+	OrderChanged          func(int)
+	FilterChanged         func(int)
 
 	stack          *gtk.Stack
 	postListBox    *gtk.Box
@@ -29,6 +32,10 @@ type MainView struct {
 	postBox        *gtk.Box
 	postScroll     *gtk.ScrolledWindow
 	closeComments  *gtk.Button
+	search         *gtk.Button
+	menu           *gtk.MenuButton
+	orderItems     map[int]*gtk.RadioMenuItem
+	filterItems    map[int]*gtk.RadioMenuItem
 }
 
 func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
@@ -57,9 +64,35 @@ func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
 		}
 	})
 
+	for index, orderItem := range mv.orderItems {
+		orderItem.SetActive(index == int(mv.Model.Configuration.GetOrder()))
+
+		idx, item := index, orderItem
+		orderItem.Connect("activate", func() {
+			if item.GetActive() && mv.OrderChanged != nil {
+				mv.OrderChanged(idx)
+			}
+		})
+	}
+
+	for index, filterItem := range mv.filterItems {
+		filterItem.SetActive(index == int(mv.Model.Configuration.GetFilter()))
+
+		idx, item := index, filterItem
+		filterItem.Connect("activate", func() {
+			if item.GetActive() && mv.FilterChanged != nil {
+				mv.FilterChanged(idx)
+			}
+		})
+	}
+
 	mv.Window.Show()
 
 	return nil
+}
+
+func (mv *MainView) CleanView() {
+	mv.PostListView.CleanView()
 }
 
 func (mv *MainView) buildAndSetReferences() (builder *gtk.Builder, err error) {
@@ -103,6 +136,32 @@ func (mv *MainView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 		return
 	}
 
+	mv.menu, err = utils.GetUIObject[gtk.MenuButton](builder, "menu")
+	if err != nil {
+		return
+	}
+
+	mv.search, err = utils.GetUIObject[gtk.Button](builder, "search")
+	if err != nil {
+		return
+	}
+
+	mv.orderItems = make(map[int]*gtk.RadioMenuItem)
+	for i := 0; i < 8; i++ {
+		mv.orderItems[i], err = utils.GetUIObject[gtk.RadioMenuItem](builder, "order"+strconv.Itoa(i))
+		if err != nil {
+			return
+		}
+	}
+
+	mv.filterItems = make(map[int]*gtk.RadioMenuItem)
+	for i := 0; i < 3; i++ {
+		mv.filterItems[i], err = utils.GetUIObject[gtk.RadioMenuItem](builder, "filter"+strconv.Itoa(i))
+		if err != nil {
+			return
+		}
+	}
+
 	return
 }
 
@@ -116,6 +175,8 @@ func (mv *MainView) OpenComments(postID int64) {
 	mv.stack.SetVisibleChild(&mv.postScroll.Container)
 
 	mv.closeComments.Show()
+	mv.menu.Hide()
+	mv.search.Hide()
 }
 
 func (mv *MainView) CloseComments() {
@@ -125,6 +186,8 @@ func (mv *MainView) CloseComments() {
 	mv.stack.SetVisibleChild(&mv.postListScroll.Container)
 
 	mv.closeComments.Hide()
+	mv.menu.Show()
+	mv.search.Show()
 }
 
 func (mv *MainView) onNewPosts() {

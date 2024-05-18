@@ -12,13 +12,15 @@ type PostsController struct {
 	appModel *model.AppModel
 }
 
-func (pc *PostsController) Init(mw *view.MainView, am *model.AppModel) {
-	pc.mainView = mw
+func (pc *PostsController) Init(mv *view.MainView, am *model.AppModel) {
+	pc.mainView = mv
 	pc.appModel = am
 
-	mw.PostListBottomReached = pc.onPostListBottomReached
-	mw.PostListView.CommentClicked = pc.onCommentsClicked
-	mw.CloseCommentsClicked = pc.onCloseCommentsClicked
+	mv.PostListBottomReached = pc.onPostListBottomReached
+	mv.PostListView.CommentClicked = pc.onCommentsClicked
+	mv.CloseCommentsClicked = pc.onCloseCommentsClicked
+	mv.OrderChanged = pc.onOrderChanged
+	mv.FilterChanged = pc.onFilterChanged
 }
 
 func (pc *PostsController) onPostListBottomReached() {
@@ -41,4 +43,26 @@ func (pc *PostsController) onCommentsClicked(id int64) {
 
 func (pc *PostsController) onCloseCommentsClicked() {
 	pc.mainView.CloseComments()
+}
+
+func (pc *PostsController) onOrderChanged(newOrder int) {
+	pc.appModel.Configuration.SetOrder(model.PostsOrder(newOrder))
+	pc.mainView.CleanView()
+	pc.appModel.CleanModel()
+	pc.appModel.RetrieveMorePosts(func(err error) {
+		if err != nil {
+			log.Println(err)
+		}
+	})
+}
+
+func (pc *PostsController) onFilterChanged(newFilter int) {
+	pc.appModel.Configuration.SetFilter(model.PostsFilter(newFilter))
+	pc.mainView.CleanView()
+	pc.appModel.CleanModel()
+	pc.appModel.RetrieveMorePosts(func(err error) {
+		if err != nil {
+			log.Println(err)
+		}
+	})
 }

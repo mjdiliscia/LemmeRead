@@ -13,8 +13,9 @@ import (
 const MAX_COMMENTS_PER_REQUEST int64 = 40
 
 type AppModel struct {
-	KnownPosts map[int64]PostModel
-	NewPosts   func()
+	KnownPosts    map[int64]PostModel
+	NewPosts      func()
+	Configuration AppModelConfiguration
 
 	lastAddedPosts     []int64
 	nextPageToRetrieve int64
@@ -24,8 +25,8 @@ type AppModel struct {
 }
 
 func (am *AppModel) Init() {
-	am.nextPageToRetrieve = 0
-	am.KnownPosts = make(map[int64]PostModel)
+	am.Configuration = NewAppModelConfiguration("config.json")
+	am.CleanModel()
 }
 
 func (am *AppModel) InitializeLemmyClient(url string, username string, password string, callback func(error)) {
@@ -46,6 +47,13 @@ func (am *AppModel) InitializeLemmyClient(url string, username string, password 
 
 		callInMain(func() error { return err }, callback)
 	}()
+}
+
+func (am *AppModel) CleanModel() {
+	am.nextPageToRetrieve = 0
+	am.KnownPosts = make(map[int64]PostModel)
+	am.lastAddedPosts = make([]int64, 0)
+	am.pendingProcesses = make([]string, 0)
 }
 
 func (am *AppModel) RetrieveMorePosts(callback func(error)) {
@@ -69,13 +77,22 @@ func (am *AppModel) RetrievePosts(page int64, callback func(error)) {
 	am.pendingProcesses = append(am.pendingProcesses, processID)
 	go func() {
 		response, err := am.lemmyClient.Posts(am.lemmyContext, lemmy.GetPosts{
-			Type: lemmy.NewOptional(lemmy.ListingTypeSubscribed),
+			Type: lemmy.NewOptional(am.getCurrentType()),
 			Page: lemmy.NewOptional(page + 1),
+			Sort: lemmy.NewOptional(am.getCurrentSort()),
 		})
 		log.Printf("Posts from page %d retrieval completed. Error: %v", page, err)
-		callInMain(func() error { return am.addPosts(response.Posts, err) }, func(err error) {
+		callInMain(func() error {
+			if slices.Index(am.pendingProcesses, processID) == -1 {
+				return fmt.Errorf("Process %s no longer needed", processID)
+			}
+
+			return am.addPosts(response.Posts, err)
+		}, func(err error) {
 			processIndex := slices.Index(am.pendingProcesses, processID)
-			am.pendingProcesses = append(am.pendingProcesses[:processIndex], am.pendingProcesses[processIndex+1:]...)
+			if processIndex != -1 {
+				am.pendingProcesses = append(am.pendingProcesses[:processIndex], am.pendingProcesses[processIndex+1:]...)
+			}
 
 			callback(err)
 		})
@@ -179,6 +196,10 @@ func (am *AppModel) addPosts(posts []lemmy.PostView, err error) error {
 			am.pendingProcesses = append(am.pendingProcesses, processID)
 			postModel.Init(func(err error) {
 				processIndex := slices.Index(am.pendingProcesses, processID)
+				if processIndex == -1 {
+					log.Printf("Process for post %d not needed anymore, skipping: %s", postID, err)
+					return
+				}
 				am.pendingProcesses = append(am.pendingProcesses[:processIndex], am.pendingProcesses[processIndex+1:]...)
 
 				if err != nil {
@@ -195,6 +216,42 @@ func (am *AppModel) addPosts(posts []lemmy.PostView, err error) error {
 		}
 	}
 	return err
+}
+
+func (am *AppModel) getCurrentSort() lemmy.SortType {
+	order := am.Configuration.GetOrder()
+	switch order {
+	case PostOrderActive:
+		return lemmy.SortTypeActive
+	case PostOrderHot:
+		return lemmy.SortTypeHot
+	case PostOrderScaled:
+		return lemmy.SortTypeScaled
+	case PostOrderControversial:
+		return lemmy.SortTypeControversial
+	case PostOrderNew:
+		return lemmy.SortTypeNew
+	case PostOrderOld:
+		return lemmy.SortTypeOld
+	case PostOderMostComments:
+		return lemmy.SortTypeMostComments
+	case PostOrderNewComments:
+		return lemmy.SortTypeNewComments
+	}
+	return lemmy.SortTypeActive
+}
+
+func (am *AppModel) getCurrentType() lemmy.ListingType {
+	filter := am.Configuration.GetFilter()
+	switch filter {
+	case PostFilterSubscribed:
+		return lemmy.ListingTypeSubscribed
+	case PostFilterLocal:
+		return lemmy.ListingTypeLocal
+	case PostFilterAll:
+		return lemmy.ListingTypeAll
+	}
+	return lemmy.ListingTypeSubscribed
 }
 
 func callInMain(function func() error, callback func(error)) {

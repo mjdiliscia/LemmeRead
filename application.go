@@ -36,12 +36,17 @@ func NewApplication() (app Application, err error) {
 }
 
 func (app *Application) onActivate() {
-	app.initMainWindow()
+	app.initAppModel()
+	app.initMainView()
 	app.setupControllers()
 	app.lemmyStartup()
 }
 
-func (app *Application) initMainWindow() {
+func (app *Application) initAppModel() {
+	app.Model.Init()
+}
+
+func (app *Application) initMainView() {
 	log.Println("About to setup MainWindow...")
 	err := app.View.SetupMainView(&app.Model)
 	if err != nil {
@@ -56,7 +61,6 @@ func (app *Application) setupControllers() {
 }
 
 func (app *Application) lemmyStartup() {
-	app.Model.Init()
 	log.Println("About to initialize and login to Lemmy...")
 	app.Model.InitializeLemmyClient("https://lemm.ee", "mjdiliscia", "qNZ^jyj2q.0@", func(err error) {
 		if err != nil {

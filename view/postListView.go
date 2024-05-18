@@ -22,6 +22,17 @@ func (plv *PostListView) SetupPostListView(box *gtk.Box) (err error) {
 	return
 }
 
+func (plv *PostListView) CleanView() {
+	plv.shownPosts = make([]int64, 0)
+	plv.postViews = make([]PostView, 0)
+	plv.postsBox.GetChildren().Foreach(func(child interface{}) {
+		widget, ok := child.(gtk.IWidget)
+		if ok {
+			plv.postsBox.Remove(widget)
+		}
+	})
+}
+
 func (plv *PostListView) FillPostsData(posts []model.PostModel) {
 	for _, post := range posts {
 		if slices.Index(plv.shownPosts, post.Post.ID) != -1 {

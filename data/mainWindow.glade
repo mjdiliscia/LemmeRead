@@ -7,6 +7,152 @@
     <property name="can-focus">False</property>
     <property name="stock">gtk-go-back</property>
   </object>
+  <object class="GtkMenu" id="mainmenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="order">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">Ordering</property>
+        <property name="use-underline">True</property>
+        <child type="submenu">
+          <object class="GtkMenu">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkRadioMenuItem" id="order0">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Active</property>
+                <property name="use-underline">True</property>
+                <property name="active">True</property>
+                <property name="draw-as-radio">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="order1">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Hot</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">order0</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="order2">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Scaled</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">order0</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="order3">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Controversial</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">order0</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="order4">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">New</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">order0</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="order5">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Old</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">order0</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="order6">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Most Comments</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">order0</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="order7">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">New Comments</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">order0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="filter">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">Filter</property>
+        <property name="use-underline">True</property>
+        <child type="submenu">
+          <object class="GtkMenu">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkRadioMenuItem" id="filter0">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Subscribed</property>
+                <property name="use-underline">True</property>
+                <property name="active">True</property>
+                <property name="draw-as-radio">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="filter1">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Local</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">filter0</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRadioMenuItem" id="filter2">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">All</property>
+                <property name="use-underline">True</property>
+                <property name="draw-as-radio">True</property>
+                <property name="group">filter0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkImage" id="searchImg">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-find</property>
+  </object>
   <object class="GtkApplicationWindow" id="window">
     <property name="width-request">720</property>
     <property name="height-request">600</property>
@@ -184,13 +330,52 @@
         <property name="title" translatable="yes">LemmeRead</property>
         <property name="show-close-button">True</property>
         <child>
+          <object class="GtkMenuButton" id="menu">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="popup">mainmenu</property>
+            <property name="direction">none</property>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="search">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="image">searchImg</property>
+          </object>
+          <packing>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkButton" id="closeComments">
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
             <property name="image">backImg</property>
             <property name="always-show-image">True</property>
           </object>
+          <packing>
+            <property name="position">3</property>
+          </packing>
         </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkPopover" id="searchPopover">
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkSearchEntry" id="searchEntry">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="primary-icon-name">edit-find-symbolic</property>
+        <property name="primary-icon-activatable">False</property>
+        <property name="primary-icon-sensitive">False</property>
       </object>
     </child>
   </object>
