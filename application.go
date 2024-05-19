@@ -37,9 +37,13 @@ func NewApplication() (app Application, err error) {
 
 func (app *Application) onActivate() {
 	app.initAppModel()
-	app.initMainView()
-	app.setupControllers()
-	app.lemmyStartup()
+	if app.Model.Configuration.HaveLemmyData() {
+		app.initMainView()
+		app.setupControllers()
+		app.lemmyStartup()
+	} else {
+		app.initLoginView()
+	}
 }
 
 func (app *Application) initAppModel() {
@@ -62,17 +66,35 @@ func (app *Application) setupControllers() {
 
 func (app *Application) lemmyStartup() {
 	log.Println("About to initialize and login to Lemmy...")
-	app.Model.InitializeLemmyClient("https://lemm.ee", "mjdiliscia", "qNZ^jyj2q.0@", func(err error) {
+	err := app.Model.InitializeLemmyClient()
+	app.onLemmyStarted(err)
+}
+
+func (app *Application) initLoginView() {
+	var loginView view.LoginView
+	err := loginView.SetupLoginView()
+	if err != nil {
+		log.Panic(err)
+	}
+	loginView.Window.SetApplication(app.GtkApplication)
+	loginView.LoginClicked = func(server string, username string, password string) {
+		loginView.DestroyWindow()
+		app.initMainView()
+		app.setupControllers()
+		app.Model.InitializeLemmyClientWithLogin(server, username, password, app.onLemmyStarted)
+	}
+}
+
+func (app *Application) onLemmyStarted(err error) {
+	if err != nil {
+		log.Panic(err)
+	}
+	log.Println("Initialization finished.")
+	log.Println("About to retrieve first page of posts...")
+	app.Model.RetrieveMorePosts(func(err error) {
 		if err != nil {
 			log.Panic(err)
 		}
-		log.Println("Initialization finished.")
-		log.Println("About to retrieve first page of posts...")
-		app.Model.RetrieveMorePosts(func(err error) {
-			if err != nil {
-				log.Panic(err)
-			}
-			log.Println("Inital posts retrieval finished.")
-		})
+		log.Println("Inital posts retrieval finished.")
 	})
 }

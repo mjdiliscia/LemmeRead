@@ -29,7 +29,22 @@ func (am *AppModel) Init() {
 	am.CleanModel()
 }
 
-func (am *AppModel) InitializeLemmyClient(url string, username string, password string, callback func(error)) {
+func (am *AppModel) InitializeLemmyClient() error {
+	var err error
+	am.lemmyClient, err = lemmy.New(am.Configuration.GetLemmyServer())
+	if err != nil {
+		return fmt.Errorf("Couldn't create a Lemmy Client: %s", err)
+	}
+
+	am.lemmyContext = context.Background()
+
+	log.Println("Initializing LemmyClient with existing token.")
+	am.lemmyClient.Token = am.Configuration.GetLemmyToken()
+
+	return err
+}
+
+func (am *AppModel) InitializeLemmyClientWithLogin(url string, username string, password string, callback func(error)) {
 	var err error
 	am.lemmyClient, err = lemmy.New(url)
 	if err != nil {
@@ -39,13 +54,20 @@ func (am *AppModel) InitializeLemmyClient(url string, username string, password 
 	am.lemmyContext = context.Background()
 
 	go func() {
+		log.Println("Initializing LemmyClient with through login.")
 		err = am.lemmyClient.ClientLogin(am.lemmyContext, lemmy.Login{
 			UsernameOrEmail: username,
 			Password:        password,
 			TOTP2FAToken:    lemmy.NewOptionalNil[string](),
 		})
 
-		callInMain(func() error { return err }, callback)
+		callInMain(func() error {
+			if err == nil {
+				am.Configuration.SetLemmyServer(url)
+				am.Configuration.SetLemmyToken(am.lemmyClient.Token)
+			}
+			return err
+		}, callback)
 	}()
 }
 
