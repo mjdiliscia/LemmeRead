@@ -44,7 +44,7 @@ func (am *AppModel) InitializeLemmyClient() error {
 	return err
 }
 
-func (am *AppModel) InitializeLemmyClientWithLogin(url string, username string, password string, callback func(error)) {
+func (am *AppModel) InitializeLemmyClientWithLogin(url string, username string, password string, totp string, callback func(error)) {
 	var err error
 	am.lemmyClient, err = lemmy.New(url)
 	if err != nil {
@@ -55,10 +55,16 @@ func (am *AppModel) InitializeLemmyClientWithLogin(url string, username string, 
 
 	go func() {
 		log.Println("Initializing LemmyClient with through login.")
+		var optionalTotp lemmy.Optional[string]
+		if totp != "" {
+			optionalTotp = lemmy.NewOptional(totp)
+		} else {
+			optionalTotp = lemmy.NewOptionalNil[string]()
+		}
 		err = am.lemmyClient.ClientLogin(am.lemmyContext, lemmy.Login{
 			UsernameOrEmail: username,
 			Password:        password,
-			TOTP2FAToken:    lemmy.NewOptionalNil[string](),
+			TOTP2FAToken:    optionalTotp,
 		})
 
 		callInMain(func() error {

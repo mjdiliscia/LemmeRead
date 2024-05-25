@@ -77,11 +77,11 @@ func (app *Application) initLoginView() {
 		log.Panic(err)
 	}
 	loginView.Window.SetApplication(app.GtkApplication)
-	loginView.LoginClicked = func(server string, username string, password string) {
+	loginView.LoginClicked = func(server string, username string, password string, totp string) {
 		loginView.DestroyWindow()
 		app.initMainView()
 		app.setupControllers()
-		app.Model.InitializeLemmyClientWithLogin(server, username, password, app.onLemmyStarted)
+		app.Model.InitializeLemmyClientWithLogin(server, username, password, totp, app.onLemmyStarted)
 	}
 }
 

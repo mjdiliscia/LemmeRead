@@ -9,12 +9,13 @@ import (
 )
 
 type LoginView struct {
-	LoginClicked func(string, string, string)
+	LoginClicked func(string, string, string, string)
 	Window       *gtk.Dialog
 
 	server   *gtk.Entry
 	username *gtk.Entry
 	password *gtk.Entry
+	totp     *gtk.Entry
 	login    *gtk.Button
 }
 
@@ -41,7 +42,12 @@ func (lv *LoginView) SetupLoginView() (err error) {
 				log.Panic(err)
 			}
 
-			lv.LoginClicked(server, username, password)
+			totp, err := lv.totp.GetText()
+			if err != nil {
+				log.Panic(err)
+			}
+
+			lv.LoginClicked(server, username, password, totp)
 		}
 	})
 
@@ -77,6 +83,11 @@ func (lv *LoginView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 	}
 
 	lv.password, err = utils.GetUIObject[gtk.Entry](builder, "password")
+	if err != nil {
+		return
+	}
+
+	lv.totp, err = utils.GetUIObject[gtk.Entry](builder, "totp")
 	if err != nil {
 		return
 	}
