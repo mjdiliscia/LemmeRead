@@ -12,3 +12,12 @@
 	font: 25px Sans;
 	font-weight: bold;
 }
+
+label.content {
+  color: black;
+}
+
+#username {
+  color: #986a44;
+  font-style: italic;
+}

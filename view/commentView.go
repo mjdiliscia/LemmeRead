@@ -51,16 +51,19 @@ func (cv *CommentView) buildAndSetReferences() (commentBox *gtk.Box, err error) 
 	if err != nil {
 		return
 	}
+	utils.ApplyStyle(&cv.username.Widget)
 
 	cv.timestamp, err = utils.GetUIObject[gtk.Label](builder, "timestamp")
 	if err != nil {
 		return
 	}
+	utils.ApplyStyle(&cv.timestamp.Widget)
 
 	cv.commentText, err = utils.GetUIObject[gtk.Label](builder, "commentText")
 	if err != nil {
 		return
 	}
+	utils.ApplyStyle(&cv.commentText.Widget)
 
 	cv.votes, err = utils.GetUIObject[gtk.SpinButton](builder, "votes")
 	if err != nil {

@@ -65,6 +65,7 @@
             </child>
             <child>
               <object class="GtkLabel" id="username">
+                <property name="name">username</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">username</property>
@@ -92,6 +93,9 @@
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">3 minutes ago</property>
                 <property name="use-markup">True</property>
+                <style>
+                  <class name="content"/>
+                </style>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -115,6 +119,9 @@
             <property name="selectable">True</property>
             <property name="max-width-chars">1</property>
             <property name="xalign">0</property>
+            <style>
+              <class name="content"/>
+            </style>
           </object>
           <packing>
             <property name="expand">False</property>

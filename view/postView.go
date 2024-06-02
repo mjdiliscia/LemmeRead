@@ -88,6 +88,7 @@ func (pv *PostView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 	if err != nil {
 		return
 	}
+	utils.ApplyStyle(&pv.username.Widget)
 
 	pv.link, err = utils.GetUIObject[gtk.LinkButton](builder, "linkButton")
 	if err != nil {
@@ -98,6 +99,7 @@ func (pv *PostView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 	if err != nil {
 		return
 	}
+	utils.ApplyStyle(&pv.timestamp.Widget)
 
 	pv.image, err = utils.GetUIObject[gtk.Image](builder, "image")
 	if err != nil {
@@ -108,6 +110,7 @@ func (pv *PostView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 	if err != nil {
 		return
 	}
+	utils.ApplyStyle(&pv.description.Widget)
 
 	pv.votes, err = utils.GetUIObject[gtk.SpinButton](builder, "votes")
 	if err != nil {
