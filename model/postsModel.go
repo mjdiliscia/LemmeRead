@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/gotk3/gotk3/gdk"
+	"github.com/diamondburned/gotk4/pkg/gdkpixbuf/v2"
 	"github.com/mjdiliscia/LemmeRead/utils"
 	"go.elara.ws/go-lemmy"
 )
@@ -15,8 +15,8 @@ type PostModel struct {
 	lemmy.PostView
 	IsImagePost   bool
 	Link          string
-	Image         *gdk.Pixbuf
-	CommunityIcon *gdk.Pixbuf
+	Image         *gdkpixbuf.Pixbuf
+	CommunityIcon *gdkpixbuf.Pixbuf
 	Comments      []*CommentModel
 
 	commentHolder []CommentModel
@@ -24,7 +24,7 @@ type PostModel struct {
 
 type PMData struct {
 	str    string
-	pixbuf *gdk.Pixbuf
+	pixbuf *gdkpixbuf.Pixbuf
 }
 
 func (pm *PostModel) Init(callback func(error)) {

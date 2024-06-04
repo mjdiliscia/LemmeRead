@@ -4,7 +4,7 @@ import (
 	"log"
 	"slices"
 
-	"github.com/gotk3/gotk3/gtk"
+	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/mjdiliscia/LemmeRead/model"
 )
 
@@ -25,12 +25,9 @@ func (plv *PostListView) SetupPostListView(box *gtk.Box) (err error) {
 func (plv *PostListView) CleanView() {
 	plv.shownPosts = make([]int64, 0)
 	plv.postViews = make([]PostView, 0)
-	plv.postsBox.GetChildren().Foreach(func(child interface{}) {
-		widget, ok := child.(gtk.IWidget)
-		if ok {
-			plv.postsBox.Remove(widget)
-		}
-	})
+	for child := plv.postsBox.FirstChild(); child != nil; child = plv.postsBox.FirstChild() {
+		plv.postsBox.Remove(child)
+	}
 }
 
 func (plv *PostListView) FillPostsData(posts []model.PostModel) {

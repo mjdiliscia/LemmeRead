@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/gotk3/gotk3/gtk"
+	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/mjdiliscia/LemmeRead/data"
 	"github.com/mjdiliscia/LemmeRead/model"
 	"github.com/mjdiliscia/LemmeRead/utils"
@@ -43,7 +43,7 @@ func (pv *PostView) SetupPostView(post model.PostModel, comments []*model.Commen
 	pv.fillPostData(post, comments == nil)
 	pv.buildComments(comments)
 
-	pv.parentBox.PackStart(pv.post, false, false, 0)
+	pv.parentBox.Append(pv.post)
 
 	return
 }
@@ -53,12 +53,9 @@ func (pv *PostView) Destroy() {
 }
 
 func (pv *PostView) buildAndSetReferences() (builder *gtk.Builder, err error) {
-	builder, err = gtk.BuilderNewFromString(string(data.PostUI))
-	if err != nil {
-		return
-	}
+	builder = gtk.NewBuilderFromString(string(data.PostUI), -1)
 
-	pv.post, err = utils.GetUIObject[gtk.Box](builder, "post")
+	pv.post, err = utils.GetUIObject[*gtk.Box](builder, "post")
 	if err != nil {
 		return
 	}
@@ -67,63 +64,63 @@ func (pv *PostView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 		utils.ApplyStyle(&card.Widget)
 	})
 
-	pv.title, err = utils.GetUIObject[gtk.Label](builder, "title")
+	pv.title, err = utils.GetUIObject[*gtk.Label](builder, "title")
 	if err != nil {
 		return
 	}
 	utils.ApplyStyle(&pv.title.Widget)
 
-	pv.communityIcon, err = utils.GetUIObject[gtk.Image](builder, "communityIcon")
+	pv.communityIcon, err = utils.GetUIObject[*gtk.Image](builder, "communityIcon")
 	if err != nil {
 		return
 	}
 
-	pv.communityName, err = utils.GetUIObject[gtk.Label](builder, "communityName")
+	pv.communityName, err = utils.GetUIObject[*gtk.Label](builder, "communityName")
 	if err != nil {
 		return
 	}
 	utils.ApplyStyle(&pv.communityName.Widget)
 
-	pv.username, err = utils.GetUIObject[gtk.Label](builder, "username")
+	pv.username, err = utils.GetUIObject[*gtk.Label](builder, "username")
 	if err != nil {
 		return
 	}
 	utils.ApplyStyle(&pv.username.Widget)
 
-	pv.link, err = utils.GetUIObject[gtk.LinkButton](builder, "linkButton")
+	pv.link, err = utils.GetUIObject[*gtk.LinkButton](builder, "linkButton")
 	if err != nil {
 		return
 	}
 
-	pv.timestamp, err = utils.GetUIObject[gtk.Label](builder, "time")
+	pv.timestamp, err = utils.GetUIObject[*gtk.Label](builder, "time")
 	if err != nil {
 		return
 	}
 	utils.ApplyStyle(&pv.timestamp.Widget)
 
-	pv.image, err = utils.GetUIObject[gtk.Image](builder, "image")
+	pv.image, err = utils.GetUIObject[*gtk.Image](builder, "image")
 	if err != nil {
 		return
 	}
 
-	pv.description, err = utils.GetUIObject[gtk.Label](builder, "description")
+	pv.description, err = utils.GetUIObject[*gtk.Label](builder, "description")
 	if err != nil {
 		return
 	}
 	utils.ApplyStyle(&pv.description.Widget)
 
-	pv.votes, err = utils.GetUIObject[gtk.SpinButton](builder, "votes")
+	pv.votes, err = utils.GetUIObject[*gtk.SpinButton](builder, "votes")
 	if err != nil {
 		return
 	}
 	pv.votes.SetIncrements(1, 1)
 
-	pv.commentsBox, err = utils.GetUIObject[gtk.Box](builder, "commentsParent")
+	pv.commentsBox, err = utils.GetUIObject[*gtk.Box](builder, "commentsParent")
 	if err != nil {
 		return
 	}
 
-	pv.commentsButton, err = utils.GetUIObject[gtk.Button](builder, "commentsButton")
+	pv.commentsButton, err = utils.GetUIObject[*gtk.Button](builder, "commentsButton")
 	if err != nil {
 		return
 	}
@@ -166,7 +163,7 @@ func (pv *PostView) fillPostData(post model.PostModel, briefDesc bool) {
 	}
 
 	if !post.IsImagePost && post.Link != "" {
-		pv.link.SetUri(post.Link)
+		pv.link.SetURI(post.Link)
 		pv.link.Show()
 	}
 
@@ -191,7 +188,7 @@ func addCommentsTo(box *gtk.Box, comments []*model.CommentModel) {
 			log.Printf("Error creating comment UI for %d", comment.Comment.ID)
 			return
 		}
-		box.PackStart(commentView.CommentBox, true, false, 5)
+		box.Append(commentView.CommentBox)
 		if len(comment.ChildComments) > 0 {
 			log.Printf("%d has %d children", comment.Comment.ID, len(comment.ChildComments))
 			addCommentsTo(commentView.childCommentsBox, comment.ChildComments)

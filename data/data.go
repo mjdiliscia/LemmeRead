@@ -2,16 +2,16 @@ package data
 
 import _ "embed"
 
-//go:embed login.glade
+//go:embed login.ui
 var LoginUI []byte
 
-//go:embed mainWindow.glade
+//go:embed mainWindow.ui
 var MainWindowUI []byte
 
-//go:embed post.glade
+//go:embed post.ui
 var PostUI []byte
 
-//go:embed comment.glade
+//go:embed comment.ui
 var CommentUI []byte
 
 //go:embed style.css

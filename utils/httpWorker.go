@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gotk3/gotk3/gdk"
+	"github.com/diamondburned/gotk4/pkg/gdkpixbuf/v2"
 )
 
-var httpCache map[string]*gdk.Pixbuf
+var httpCache map[string]*gdkpixbuf.Pixbuf
 
-func LoadPixmapFromUrl(url string) (pixbuf *gdk.Pixbuf, err error) {
+func LoadPixmapFromUrl(url string) (pixbuf *gdkpixbuf.Pixbuf, err error) {
 	if httpCache == nil {
-		httpCache = make(map[string]*gdk.Pixbuf)
+		httpCache = make(map[string]*gdkpixbuf.Pixbuf)
 	}
 
 	timestamp := time.Now()
@@ -36,13 +36,11 @@ func LoadPixmapFromUrl(url string) (pixbuf *gdk.Pixbuf, err error) {
 			return
 		}
 
-		var loader *gdk.PixbufLoader
-		loader, err = gdk.PixbufLoaderNew()
-		if err != nil {
-			return
-		}
+		var loader *gdkpixbuf.PixbufLoader
+		loader = gdkpixbuf.NewPixbufLoader()
 
-		pixbuf, err = loader.WriteAndReturnPixbuf(data)
+		err = loader.Write(data)
+		pixbuf = loader.Pixbuf()
 		log.Printf("GET time for '%s': %d", url, time.Now().Sub(timestamp).Milliseconds())
 
 		httpCache[url] = pixbuf

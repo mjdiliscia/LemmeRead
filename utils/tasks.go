@@ -1,6 +1,6 @@
 package utils
 
-import "github.com/gotk3/gotk3/glib"
+import "github.com/diamondburned/gotk4/pkg/glib/v2"
 
 type TaskSequence[W any] struct {
 	sequenceEnded func()
