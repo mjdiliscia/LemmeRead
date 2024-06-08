@@ -2,11 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
-	"github.com/gotk3/gotk3/glib"
-	"github.com/gotk3/gotk3/gtk"
+	"github.com/diamondburned/gotk4/pkg/gio/v2"
+	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/mjdiliscia/LemmeRead/controller"
 	"github.com/mjdiliscia/LemmeRead/model"
 	"github.com/mjdiliscia/LemmeRead/view"
@@ -25,10 +24,7 @@ type Application struct {
 }
 
 func NewApplication() (app Application, err error) {
-	app.GtkApplication, err = gtk.ApplicationNew(applicationName, glib.APPLICATION_FLAGS_NONE)
-	if err != nil {
-		return Application{}, fmt.Errorf("Couldn't create Gtk Application: %s", err)
-	}
+	app.GtkApplication = gtk.NewApplication(applicationName, gio.ApplicationFlagsNone)
 
 	app.GtkApplication.Connect("activate", func() { app.onActivate() })
 

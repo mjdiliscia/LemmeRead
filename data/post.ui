@@ -1,22 +1,30 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.90.2 -->
 <interface>
+  <!-- interface-name post.ui -->
   <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0" />
   <object class="GtkWindow">
     <property name="child">
       <object class="GtkBox" id="post">
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkBox" id="card">
+          <object class="AdwClamp" id="card">
             <property name="name">card</property>
-            <property name="width-request">600</property>
+            <property name="vexpand">1</property>
+            <property name="visible">True</property>
+            <property name="maximum_size">600</property>
+            <property name="tightening_threshold">600</property>
+            <child>
+            <object class="GtkBox">
             <property name="orientation">vertical</property>
             <property name="spacing">5</property>
             <child>
               <object class="GtkLabel" id="title">
-                <property name="name">postTitle</property>
-                <property name="label" translatable="1">Title of post</property>
-                <property name="wrap">1</property>
+                <property name="label" translatable="yes">Title of post</property>
                 <property name="max-width-chars">1</property>
+                <property name="name">postTitle</property>
+                <property name="wrap">1</property>
                 <property name="xalign">0</property>
                 <style>
                   <class name="content"/>
@@ -25,6 +33,7 @@
             </child>
             <child>
               <object class="GtkBox" id="subtitle">
+                <property name="spacing">5</property>
                 <child>
                   <object class="GtkImage" id="communityIcon"/>
                 </child>
@@ -33,8 +42,8 @@
                 </child>
                 <child>
                   <object class="GtkLabel" id="communityName">
+                    <property name="label" translatable="yes">Community name</property>
                     <property name="name">communityName</property>
-                    <property name="label" translatable="1">Community name</property>
                     <style>
                       <class name="content"/>
                     </style>
@@ -45,8 +54,8 @@
                 </child>
                 <child>
                   <object class="GtkLabel" id="username">
+                    <property name="label" translatable="yes">Username</property>
                     <property name="name">username</property>
-                    <property name="label" translatable="1">Username</property>
                   </object>
                 </child>
                 <child>
@@ -54,7 +63,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel" id="time">
-                    <property name="label" translatable="1">Time</property>
+                    <property name="label" translatable="yes">Time</property>
                     <style>
                       <class name="content"/>
                     </style>
@@ -62,28 +71,29 @@
                 </child>
                 <child>
                   <object class="GtkLinkButton" id="linkButton">
-                    <property name="visible">0</property>
-                    <property name="label" translatable="1">Link</property>
                     <property name="focusable">1</property>
+                    <property name="label" translatable="yes">Link</property>
                     <property name="receives-default">1</property>
+                    <property name="visible">0</property>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="GtkImage" id="image">
-                <property name="vexpand">1</property>
-                <property name="visible">0</property>
+              <object class="GtkPicture" id="image">
+                <property name="can-shrink">false</property>
+                <property name="content-fit">contain</property>
+                <property name="halign">center</property>
               </object>
             </child>
             <child>
               <object class="GtkLabel" id="description">
-                <property name="label" translatable="1">
+                <property name="label" translatable="yes">
 </property>
+                <property name="max-width-chars">1</property>
+                <property name="selectable">1</property>
                 <property name="use-markup">1</property>
                 <property name="wrap">1</property>
-                <property name="selectable">1</property>
-                <property name="max-width-chars">1</property>
                 <property name="xalign">0</property>
                 <style>
                   <class name="content"/>
@@ -99,28 +109,23 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkImage">
-                    <property name="hexpand">1</property>
-                  </object>
-                </child>
-                <child>
                   <object class="GtkButton" id="commentsButton">
-                    <property name="label" translatable="1">comments</property>
                     <property name="focusable">1</property>
+                    <property name="label" translatable="yes">comments</property>
                     <property name="receives-default">1</property>
+                    <property name="halign">right</property>
                   </object>
                 </child>
               </object>
+            </child>
+            </object>
             </child>
           </object>
         </child>
         <child>
           <object class="GtkBox" id="commentsParent">
-            <property name="vexpand">1</property>
             <property name="orientation">vertical</property>
-            <child>
-              <placeholder/>
-            </child>
+            <property name="vexpand">1</property>
           </object>
         </child>
       </object>

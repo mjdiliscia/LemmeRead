@@ -5,6 +5,7 @@ go 1.21.0
 toolchain go1.22.3
 
 require (
+	github.com/diamondburned/gotk4-adwaita/pkg v0.0.0-20240512000724-8dc7455ee58f
 	github.com/diamondburned/gotk4/pkg v0.2.2
 	go.elara.ws/go-lemmy v0.19.0
 )

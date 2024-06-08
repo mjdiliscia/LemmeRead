@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/diamondburned/gotk4-adwaita/pkg/adw"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/mjdiliscia/LemmeRead/data"
 	"github.com/mjdiliscia/LemmeRead/model"
@@ -26,7 +27,7 @@ type PostView struct {
 	username       *gtk.Label
 	timestamp      *gtk.Label
 	link           *gtk.LinkButton
-	image          *gtk.Image
+	image          *gtk.Picture
 	description    *gtk.Label
 	votes          *gtk.SpinButton
 	commentsBox    *gtk.Box
@@ -60,7 +61,7 @@ func (pv *PostView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 		return
 	}
 
-	utils.SetWidgetProperty(builder, "card", func(card *gtk.Box) {
+	utils.SetWidgetProperty(builder, "card", func(card *adw.Clamp) {
 		utils.ApplyStyle(&card.Widget)
 	})
 
@@ -98,7 +99,7 @@ func (pv *PostView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 	}
 	utils.ApplyStyle(&pv.timestamp.Widget)
 
-	pv.image, err = utils.GetUIObject[*gtk.Image](builder, "image")
+	pv.image, err = utils.GetUIObject[*gtk.Picture](builder, "image")
 	if err != nil {
 		return
 	}
@@ -168,7 +169,7 @@ func (pv *PostView) fillPostData(post model.PostModel, briefDesc bool) {
 	}
 
 	if post.Image != nil {
-		utils.SetDirectImage(pv.image, post.Image, [2]int{maxPostImageSize, maxPostImageSize}, nil)
+		utils.SetDirectPicture(pv.image, post.Image, [2]int{maxPostImageSize, maxPostImageSize}, nil)
 	}
 
 	if post.CommunityIcon != nil {

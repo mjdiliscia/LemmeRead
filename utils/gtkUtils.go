@@ -61,6 +61,25 @@ func SetImage(builder *gtk.Builder, pixbuf *gdkpixbuf.Pixbuf, imageId string, ma
 	SetDirectImage(image, pixbuf, maxSize, err)
 }
 
+func SetDirectPicture(image *gtk.Picture, pixbuf *gdkpixbuf.Pixbuf, maxSize [2]int, err error) {
+	if err != nil {
+		return
+	}
+
+	imageWidth := float64(pixbuf.Width())
+	imageWidthScale := imageWidth / float64(maxSize[0])
+	imageHeight := float64(pixbuf.Height())
+	imageHeightScale := imageHeight / float64(maxSize[1])
+
+	if imageWidthScale > 1.0 || imageHeightScale > 1.0 {
+		scale := math.Max(imageWidthScale, imageHeightScale)
+		pixbuf = pixbuf.ScaleSimple(int(imageWidth/scale), int(imageHeight/scale), gdkpixbuf.InterpHyper)
+	}
+
+	image.SetPixbuf(pixbuf)
+	image.Show()
+}
+
 func SetWidgetProperty[WType glib.Objector](builder *gtk.Builder, widgetId string, setter func(widget WType)) (err error) {
 	widget, err := GetUIObject[WType](builder, widgetId)
 	if err != nil {

@@ -1,65 +1,62 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.90.2 -->
 <interface>
+  <!-- interface-name mainWindow.ui -->
   <requires lib="gtk" version="4.0"/>
   <object class="GtkApplicationWindow" id="window">
-    <property name="width-request">720</property>
     <property name="height-request">600</property>
+    <property name="width-request">720</property>
     <child>
       <object class="GtkStack" id="stack">
         <property name="hhomogeneous">0</property>
         <property name="vhomogeneous">0</property>
         <child>
           <object class="GtkStackPage">
-            <property name="name">page0</property>
             <property name="child">
               <object class="GtkScrolledWindow" id="postListScroll">
-                <property name="focusable">1</property>
                 <property name="child">
                   <object class="GtkViewport">
-                    <property name="margin-start">10</property>
-                    <property name="margin-end">10</property>
                     <property name="child">
                       <object class="GtkBox">
                         <child>
                           <object class="GtkImage">
                             <property name="hexpand">1</property>
+                            <property name="hexpand-set">1</property>
                           </object>
                         </child>
                         <child>
                           <object class="GtkBox" id="postListBox">
-                            <property name="width-request">600</property>
-                            <property name="margin-top">10</property>
                             <property name="margin-bottom">10</property>
+                            <property name="margin-top">10</property>
                             <property name="orientation">vertical</property>
                             <property name="spacing">10</property>
-                            <child>
-                              <placeholder/>
-                            </child>
+                            <property name="width-request">600</property>
                           </object>
                         </child>
                         <child>
                           <object class="GtkImage">
                             <property name="hexpand">1</property>
+                            <property name="hexpand-set">1</property>
                           </object>
                         </child>
                       </object>
                     </property>
+                    <property name="margin-end">10</property>
+                    <property name="margin-start">10</property>
                   </object>
                 </property>
+                <property name="focusable">1</property>
               </object>
             </property>
+            <property name="name">page0</property>
           </object>
         </child>
         <child>
           <object class="GtkStackPage">
-            <property name="name">page1</property>
             <property name="child">
               <object class="GtkScrolledWindow" id="postScroll">
-                <property name="focusable">1</property>
                 <property name="child">
                   <object class="GtkViewport">
-                    <property name="margin-start">10</property>
-                    <property name="margin-end">10</property>
                     <property name="child">
                       <object class="GtkBox">
                         <child>
@@ -69,18 +66,15 @@
                         </child>
                         <child>
                           <object class="GtkBox">
-                            <property name="name">commentsContainer</property>
-                            <property name="width-request">600</property>
-                            <property name="margin-top">10</property>
                             <property name="margin-bottom">10</property>
+                            <property name="margin-top">10</property>
+                            <property name="name">commentsContainer</property>
                             <property name="orientation">vertical</property>
                             <property name="spacing">10</property>
+                            <property name="width-request">600</property>
                             <child>
                               <object class="GtkBox" id="postBox">
                                 <property name="orientation">vertical</property>
-                                <child>
-                                  <placeholder/>
-                                </child>
                               </object>
                             </child>
                           </object>
@@ -92,10 +86,14 @@
                         </child>
                       </object>
                     </property>
+                    <property name="margin-end">10</property>
+                    <property name="margin-start">10</property>
                   </object>
                 </property>
+                <property name="focusable">1</property>
               </object>
             </property>
+            <property name="name">page1</property>
           </object>
         </child>
       </object>
@@ -110,9 +108,9 @@
         </child>
         <child>
           <object class="GtkButton" id="closeComments">
-            <property name="visible">0</property>
             <property name="focusable">1</property>
             <property name="receives-default">1</property>
+            <property name="visible">0</property>
           </object>
         </child>
       </object>
