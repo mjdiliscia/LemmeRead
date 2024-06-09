@@ -1,5 +1,5 @@
 # Use an official Go image as a parent image
-FROM golang:1.20
+FROM docker.io/library/golang:1.20
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
