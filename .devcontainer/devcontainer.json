@@ -3,9 +3,6 @@
     "build": {
         "dockerfile": "Dockerfile"  // Use .containerfile if preferred
     },
-    "features": {
-        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-    },
     "remoteUser": "vscode",
     "mounts": [
         "source=${localEnv:HOME}/.config/nvim,target=/root/.config/nvim,type=bind"
