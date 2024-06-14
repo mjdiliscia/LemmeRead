@@ -3,117 +3,123 @@
 <interface>
   <!-- interface-name mainWindow.ui -->
   <requires lib="gtk" version="4.0"/>
-  <object class="GtkApplicationWindow" id="window">
+  <object class="AdwApplicationWindow" id="window">
     <property name="height-request">600</property>
-    <property name="width-request">720</property>
+    <property name="width-request">620</property>
+    <property name="default-height">600</property>
+    <property name="default-width">825</property>
     <child>
-      <object class="GtkStack" id="stack">
-        <property name="hhomogeneous">0</property>
-        <property name="vhomogeneous">0</property>
-        <child>
-          <object class="GtkStackPage">
+      <object class="AdwBreakpoint">
+        <condition>max-width: 820sp</condition>
+        <setter object="splitView" property="collapsed">True</setter>
+      </object>
+    </child>
+    <property name="content">
+      <object class="AdwNavigationSplitView" id="splitView">
+        <property name="show-content">1</property>
+        <property name="sidebar">
+          <object class="AdwNavigationPage">
+            <property name="title" translatable="yes">Sidebar</property>
+            <property name="tag">sidebar</property>
             <property name="child">
-              <object class="GtkScrolledWindow" id="postListScroll">
-                <property name="child">
-                  <object class="GtkViewport">
-                    <property name="child">
-                      <object class="GtkBox">
-                        <child>
-                          <object class="GtkImage">
-                            <property name="hexpand">1</property>
-                            <property name="hexpand-set">1</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkBox" id="postListBox">
-                            <property name="margin-bottom">10</property>
-                            <property name="margin-top">10</property>
-                            <property name="orientation">vertical</property>
-                            <property name="spacing">10</property>
-                            <property name="width-request">600</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="hexpand">1</property>
-                            <property name="hexpand-set">1</property>
-                          </object>
-                        </child>
-                      </object>
-                    </property>
-                    <property name="margin-end">10</property>
-                    <property name="margin-start">10</property>
-                  </object>
+              <object class="AdwToolbarView">
+                <child type="top">
+                  <object class="AdwHeaderBar"/>
+                </child>
+                <property name="content">
+                  <object class="AdwBin"/>
                 </property>
-                <property name="focusable">1</property>
               </object>
             </property>
-            <property name="name">page0</property>
           </object>
-        </child>
-        <child>
-          <object class="GtkStackPage">
+        </property>
+        <property name="content">
+          <object class="AdwNavigationPage">
+            <property name="title" translatable="yes">Content</property>
+            <property name="tag">content</property>
             <property name="child">
-              <object class="GtkScrolledWindow" id="postScroll">
-                <property name="child">
-                  <object class="GtkViewport">
-                    <property name="child">
-                      <object class="GtkBox">
-                        <child>
-                          <object class="GtkImage">
-                            <property name="hexpand">1</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkBox">
-                            <property name="margin-bottom">10</property>
-                            <property name="margin-top">10</property>
-                            <property name="name">commentsContainer</property>
-                            <property name="orientation">vertical</property>
-                            <property name="spacing">10</property>
-                            <property name="width-request">600</property>
-                            <child>
-                              <object class="GtkBox" id="postBox">
-                                <property name="orientation">vertical</property>
+              <object class="AdwToolbarView">
+                <child type="top">
+                  <object class="AdwHeaderBar">
+                    <property name="show-back-button">0</property>
+                    <child>
+                      <object class="GtkButton" id="search">
+                        <property name="focusable">1</property>
+                        <property name="receives-default">1</property>
+                        <property name="icon-name">edit-find-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="closeComments">
+                        <property name="focusable">1</property>
+                        <property name="receives-default">1</property>
+                        <property name="visible">0</property>
+                        <property name="icon-name">go-previous-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <property name="content">
+                  <object class="GtkStack" id="stack">
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="child">
+                          <object class="GtkScrolledWindow" id="postListScroll">
+                            <property name="child">
+                              <object class="GtkViewport">
+                                <property name="child">
+                                  <object class="AdwClamp">
+                                    <property name="maximum-size">600</property>
+                                    <property name="orientation">horizontal</property>
+                                    <property name="margin-bottom">10</property>
+                                    <property name="margin-top">10</property>
+                                    <property name="child">
+                                      <object class="GtkBox" id="postListBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">10</property>
+                                      </object>
+                                    </property>
+                                  </object>
+                                </property>
                               </object>
-                            </child>
+                            </property>
                           </object>
-                        </child>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="hexpand">1</property>
-                          </object>
-                        </child>
+                        </property>
                       </object>
-                    </property>
-                    <property name="margin-end">10</property>
-                    <property name="margin-start">10</property>
+                    </child>
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="child">
+                          <object class="GtkScrolledWindow" id="postScroll">
+                            <property name="child">
+                              <object class="GtkViewport">
+                                <property name="child">
+                                  <object class="AdwClampScrollable">
+                                    <property name="maximum-size">600</property>
+                                    <property name="orientation">horizontal</property>
+                                    <property name="margin-bottom">10</property>
+                                    <property name="margin-top">10</property>
+                                    <property name="child">
+                                      <object class="GtkBox" id="postBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">10</property>
+                                      </object>
+                                    </property>
+                                  </object>
+                                </property>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
                   </object>
                 </property>
-                <property name="focusable">1</property>
               </object>
             </property>
-            <property name="name">page1</property>
           </object>
-        </child>
+        </property>
       </object>
-    </child>
-    <child type="titlebar">
-      <object class="GtkHeaderBar">
-        <child>
-          <object class="GtkButton" id="search">
-            <property name="focusable">1</property>
-            <property name="receives-default">1</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton" id="closeComments">
-            <property name="focusable">1</property>
-            <property name="receives-default">1</property>
-            <property name="visible">0</property>
-          </object>
-        </child>
-      </object>
-    </child>
+    </property>
   </object>
 </interface>

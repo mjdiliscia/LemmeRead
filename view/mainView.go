@@ -3,6 +3,7 @@ package view
 import (
 	"log"
 
+	"github.com/diamondburned/gotk4-adwaita/pkg/adw"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/mjdiliscia/LemmeRead/data"
 	"github.com/mjdiliscia/LemmeRead/model"
@@ -16,7 +17,7 @@ const (
 )
 
 type MainView struct {
-	Window                *gtk.ApplicationWindow
+	Window                *adw.ApplicationWindow
 	Model                 *model.AppModel
 	PostListView          PostListView
 	PostView              *PostView
@@ -97,7 +98,7 @@ func (mv *MainView) CleanView() {
 func (mv *MainView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 	builder = gtk.NewBuilderFromString(string(data.MainWindowUI), -1)
 
-	mv.Window, err = utils.GetUIObject[*gtk.ApplicationWindow](builder, "window")
+	mv.Window, err = utils.GetUIObject[*adw.ApplicationWindow](builder, "window")
 	if err != nil {
 		return
 	}

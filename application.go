@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
+	"github.com/diamondburned/gotk4-adwaita/pkg/adw"
 	"github.com/diamondburned/gotk4/pkg/gio/v2"
-	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/mjdiliscia/LemmeRead/controller"
 	"github.com/mjdiliscia/LemmeRead/model"
 	"github.com/mjdiliscia/LemmeRead/view"
@@ -17,16 +17,16 @@ const applicationName = "io.github.mjdiliscia.lemmeread"
 type Application struct {
 	LemmyClient    *lemmy.Client
 	LemmyContext   context.Context
-	GtkApplication *gtk.Application
+	AdwApplication *adw.Application
 	View           view.MainView
 	Model          model.AppModel
 	Controller     controller.PostsController
 }
 
 func NewApplication() (app Application, err error) {
-	app.GtkApplication = gtk.NewApplication(applicationName, gio.ApplicationFlagsNone)
+	app.AdwApplication = adw.NewApplication(applicationName, gio.ApplicationFlagsNone)
 
-	app.GtkApplication.Connect("activate", func() { app.onActivate() })
+	app.AdwApplication.Connect("activate", func() { app.onActivate() })
 
 	return app, nil
 }
@@ -52,7 +52,7 @@ func (app *Application) initMainView() {
 	if err != nil {
 		log.Panic(err)
 	}
-	app.View.Window.SetApplication(app.GtkApplication)
+	app.View.Window.SetApplication(&app.AdwApplication.Application)
 	log.Println("MainWindow setup finished.")
 }
 
@@ -72,7 +72,7 @@ func (app *Application) initLoginView() {
 	if err != nil {
 		log.Panic(err)
 	}
-	loginView.Window.SetApplication(app.GtkApplication)
+	loginView.Window.SetApplication(&app.AdwApplication.Application)
 	loginView.LoginClicked = func(server string, username string, password string, totp string) {
 		loginView.DestroyWindow()
 		app.initMainView()
