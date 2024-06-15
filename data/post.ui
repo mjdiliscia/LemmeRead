@@ -10,13 +10,17 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="AdwClamp" id="card">
-            <property name="name">card</property>
+            <property name="css-classes">card</property>
             <property name="vexpand">1</property>
             <property name="visible">True</property>
             <property name="maximum_size">600</property>
             <property name="tightening_threshold">600</property>
             <child>
             <object class="GtkBox">
+                <property name="margin-top">10</property>
+                <property name="margin-bottom">10</property>
+                <property name="margin-start">10</property>
+                <property name="margin-end">10</property>
             <property name="orientation">vertical</property>
             <property name="spacing">5</property>
             <child>
@@ -26,55 +30,45 @@
                 <property name="name">postTitle</property>
                 <property name="wrap">1</property>
                 <property name="xalign">0</property>
-                <style>
-                  <class name="content"/>
-                </style>
+                    <property name="css-classes">title-1</property>
               </object>
             </child>
             <child>
               <object class="GtkBox" id="subtitle">
-                <property name="spacing">5</property>
+                <property name="spacing">10</property>
                 <child>
                   <object class="GtkImage" id="communityIcon"/>
                 </child>
                 <child>
-                  <object class="GtkSeparator"/>
-                </child>
-                <child>
                   <object class="GtkLabel" id="communityName">
                     <property name="label" translatable="yes">Community name</property>
-                    <property name="name">communityName</property>
-                    <style>
-                      <class name="content"/>
-                    </style>
+                        <property name="css-classes">title-4</property>
                   </object>
-                </child>
-                <child>
-                  <object class="GtkSeparator"/>
                 </child>
                 <child>
                   <object class="GtkLabel" id="username">
                     <property name="label" translatable="yes">Username</property>
-                    <property name="name">username</property>
+                        <property name="css-classes">accent</property>
+                        <property name="vexpand">True</property>
+                        <property name="valign">0</property>
                   </object>
                 </child>
+                    <child>
+                      <object class="GtkSeparator">
+                        <property name="css-classes">spacer</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                    </child>
                 <child>
-                  <object class="GtkSeparator"/>
+                  <object class="GtkLinkButton" id="linkButton">
+                    <property name="label" translatable="yes">Link</property>
+                    <property name="visible">0</property>
+                  </object>
                 </child>
                 <child>
                   <object class="GtkLabel" id="time">
                     <property name="label" translatable="yes">Time</property>
-                    <style>
-                      <class name="content"/>
-                    </style>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLinkButton" id="linkButton">
-                    <property name="focusable">1</property>
-                    <property name="label" translatable="yes">Link</property>
-                    <property name="receives-default">1</property>
-                    <property name="visible">0</property>
+                        <property name="css-classes">content</property>
                   </object>
                 </child>
               </object>
@@ -113,7 +107,8 @@
                     <property name="focusable">1</property>
                     <property name="label" translatable="yes">comments</property>
                     <property name="receives-default">1</property>
-                    <property name="halign">right</property>
+                    <property name="halign">end</property>
+                    <property name="hexpand">True</property>
                   </object>
                 </child>
               </object>

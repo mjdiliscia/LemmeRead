@@ -26,12 +26,13 @@ type MainView struct {
 	OrderChanged          func(int)
 	FilterChanged         func(int)
 
-	stack          *gtk.Stack
+	stack          *adw.NavigationView
+	postListPage   *adw.NavigationPage
 	postListBox    *gtk.Box
 	postListScroll *gtk.ScrolledWindow
+	postPage       *adw.NavigationPage
 	postBox        *gtk.Box
 	postScroll     *gtk.ScrolledWindow
-	closeComments  *gtk.Button
 	search         *gtk.Button
 	// menu           *gtk.MenuButton
 	// orderItems     map[int]*gtk.RadioMenuItem
@@ -55,12 +56,6 @@ func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
 	mv.postListScroll.Connect("edge-reached", func(scroll *gtk.ScrolledWindow, position gtk.PositionType) {
 		if position == gtk.PosBottom && mv.PostListBottomReached != nil {
 			mv.PostListBottomReached()
-		}
-	})
-
-	mv.closeComments.Connect("clicked", func() {
-		if mv.CloseCommentsClicked != nil {
-			mv.CloseCommentsClicked()
 		}
 	})
 
@@ -103,7 +98,12 @@ func (mv *MainView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 		return
 	}
 
-	mv.stack, err = utils.GetUIObject[*gtk.Stack](builder, "stack")
+	mv.stack, err = utils.GetUIObject[*adw.NavigationView](builder, "stack")
+	if err != nil {
+		return
+	}
+
+	mv.postListPage, err = utils.GetUIObject[*adw.NavigationPage](builder, "postListPage")
 	if err != nil {
 		return
 	}
@@ -118,6 +118,11 @@ func (mv *MainView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 		return
 	}
 
+	mv.postPage, err = utils.GetUIObject[*adw.NavigationPage](builder, "postPage")
+	if err != nil {
+		return
+	}
+
 	mv.postBox, err = utils.GetUIObject[*gtk.Box](builder, "postBox")
 	if err != nil {
 		return
@@ -128,7 +133,6 @@ func (mv *MainView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 		return
 	}
 
-	mv.closeComments, err = utils.GetUIObject[*gtk.Button](builder, "closeComments")
 	if err != nil {
 		return
 	}
@@ -168,10 +172,8 @@ func (mv *MainView) OpenComments(postID int64) {
 	if err != nil {
 		log.Println(err)
 	}
-	mv.stack.SetTransitionType(gtk.StackTransitionTypeSlideLeft)
-	mv.stack.SetVisibleChild(mv.postScroll)
+	mv.stack.Push(mv.postPage)
 
-	mv.closeComments.Show()
 	// mv.menu.Hide()
 	mv.search.Hide()
 }
@@ -179,10 +181,8 @@ func (mv *MainView) OpenComments(postID int64) {
 func (mv *MainView) CloseComments() {
 	mv.PostView.Destroy()
 	mv.PostView = nil
-	mv.stack.SetTransitionType(gtk.StackTransitionTypeSlideRight)
-	mv.stack.SetVisibleChild(mv.postListScroll)
+	mv.stack.Pop()
 
-	mv.closeComments.Hide()
 	// mv.menu.Show()
 	mv.search.Show()
 }
