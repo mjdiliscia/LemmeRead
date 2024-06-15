@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 0.90.2 -->
 <interface>
   <!-- interface-name comment.ui -->
-  <requires lib="gtk" version="4.0"/>
+  <requires lib="gtk" version="4.0" />
   <object class="GtkWindow">
     <property name="child">
       <object class="GtkBox" id="commentBox">
@@ -25,7 +25,7 @@
               </object>
             </child>
             <child>
-              <object class="GtkImage" id="userImage"/>
+              <object class="GtkImage" id="userImage" />
             </child>
             <child>
               <object class="GtkLabel" id="username">
@@ -43,7 +43,7 @@
                 <property name="label" translatable="yes">3 minutes ago</property>
                 <property name="use-markup">1</property>
                 <style>
-                  <class name="content"/>
+                  <class name="content" />
                 </style>
               </object>
             </child>
@@ -57,7 +57,7 @@
             <property name="wrap">1</property>
             <property name="xalign">0</property>
             <style>
-              <class name="content"/>
+              <class name="content" />
             </style>
           </object>
         </child>
@@ -76,7 +76,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkSeparator"/>
+          <object class="GtkSeparator" />
         </child>
         <child>
           <object class="GtkBox">

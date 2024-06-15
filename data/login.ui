@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 0.90.2 -->
 <interface>
   <!-- interface-name login.ui -->
-  <requires lib="gtk" version="4.0"/>
+  <requires lib="gtk" version="4.0" />
   <object class="GtkDialog" id="loginDialog">
     <property name="modal">1</property>
     <property name="resizable">0</property>
@@ -117,7 +117,7 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget/>
+      <action-widget />
     </action-widgets>
   </object>
 </interface>

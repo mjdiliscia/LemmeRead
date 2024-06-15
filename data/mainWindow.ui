@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 0.90.2 -->
 <interface>
   <!-- interface-name mainWindow.ui -->
-  <requires lib="gtk" version="4.0"/>
+  <requires lib="gtk" version="4.0" />
   <object class="AdwApplicationWindow" id="window">
     <property name="height-request">600</property>
     <property name="width-request">620</property>
@@ -24,10 +24,10 @@
             <property name="child">
               <object class="AdwToolbarView">
                 <child type="top">
-                  <object class="AdwHeaderBar"/>
+                  <object class="AdwHeaderBar" />
                 </child>
                 <property name="content">
-                  <object class="AdwBin"/>
+                  <object class="AdwBin" />
                 </property>
               </object>
             </property>
@@ -88,7 +88,7 @@
                     <property name="child">
                       <object class="AdwToolbarView">
                         <child type="top">
-                          <object class="AdwHeaderBar"/>
+                          <object class="AdwHeaderBar" />
                         </child>
                         <property name="content">
                           <object class="GtkScrolledWindow" id="postScroll">
