@@ -34,6 +34,7 @@ type MainView struct {
 	postBox        *gtk.Box
 	postScroll     *gtk.ScrolledWindow
 	search         *gtk.Button
+	sortButton     *gtk.MenuButton
 	sortItems      map[int]*gtk.CheckButton
 	filterItems    map[int]*adw.ActionRow
 }
@@ -79,8 +80,11 @@ func (mv *MainView) setupSort() {
 
 		idx, item := index, sortItem
 		sortItem.Connect("toggled", func() {
-			if item.Active() && mv.OrderChanged != nil {
-				mv.OrderChanged(idx)
+			if item.Active() {
+				mv.sortButton.Popdown()
+				if mv.OrderChanged != nil {
+					mv.OrderChanged(idx)
+				}
 			}
 		})
 	}
@@ -158,6 +162,11 @@ func (mv *MainView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 	}
 
 	mv.search, err = utils.GetUIObject[*gtk.Button](builder, "search")
+	if err != nil {
+		return
+	}
+
+	mv.sortButton, err = utils.GetUIObject[*gtk.MenuButton](builder, "sort")
 	if err != nil {
 		return
 	}
