@@ -37,7 +37,9 @@
                   <object class="GtkBox" id="subtitle">
                     <property name="spacing">10</property>
                     <child>
-                      <object class="GtkImage" id="communityIcon" />
+                      <object class="GtkImage" id="communityIcon">
+                        <property name="icon-size">normal</property>
+                      </object>
                     </child>
                     <child>
                       <object class="GtkLabel" id="communityName">

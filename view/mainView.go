@@ -2,6 +2,7 @@ package view
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/diamondburned/gotk4-adwaita/pkg/adw"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
@@ -34,9 +35,8 @@ type MainView struct {
 	postBox        *gtk.Box
 	postScroll     *gtk.ScrolledWindow
 	search         *gtk.Button
-	// menu           *gtk.MenuButton
-	// orderItems     map[int]*gtk.RadioMenuItem
-	// filterItems    map[int]*gtk.RadioMenuItem
+	sortItems      map[int]*gtk.CheckButton
+	filterItems    map[int]*adw.ActionRow
 }
 
 func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
@@ -59,31 +59,45 @@ func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
 		}
 	})
 
-	/*	for index, orderItem := range mv.orderItems {
-			orderItem.SetActive(index == int(mv.Model.Configuration.GetOrder()))
-
-			idx, item := index, orderItem
-			orderItem.Connect("activate", func() {
-				if item.GetActive() && mv.OrderChanged != nil {
-					mv.OrderChanged(idx)
-				}
-			})
-		}
-
-		for index, filterItem := range mv.filterItems {
-			filterItem.SetActive(index == int(mv.Model.Configuration.GetFilter()))
-
-			idx, item := index, filterItem
-			filterItem.Connect("activate", func() {
-				if item.GetActive() && mv.FilterChanged != nil {
-					mv.FilterChanged(idx)
-				}
-			})
-		}*/
+	mv.setupSort()
+	mv.setupFilter()
 
 	mv.Window.Show()
 
 	return nil
+}
+
+func (mv *MainView) setupSort() {
+	for index, sortItem := range mv.sortItems {
+		sortItem.SetActive(index == int(mv.Model.Configuration.GetOrder()))
+
+		idx, item := index, sortItem
+		sortItem.Connect("toggled", func() {
+			if item.Active() && mv.OrderChanged != nil {
+				mv.OrderChanged(idx)
+			}
+		})
+	}
+}
+
+func (mv *MainView) setupFilter() {
+	selectedFilter := int(mv.Model.Configuration.GetFilter())
+	filterItem := mv.filterItems[selectedFilter]
+	listBox := filterItem.Parent().(*gtk.ListBox)
+	listBox.Connect("row-selected", func(self *gtk.ListBox, row *gtk.ListBoxRow) {
+		item := row.Cast().(*adw.ActionRow)
+		mv.postListPage.SetTitle(item.Title())
+		if mv.FilterChanged != nil {
+			var itemId int
+			for id, filter := range mv.filterItems {
+				if filter.Title() == item.Title() {
+					itemId = id
+				}
+			}
+			mv.FilterChanged(itemId)
+		}
+	})
+	listBox.SelectRow(&filterItem.ListBoxRow)
 }
 
 func (mv *MainView) CleanView() {
@@ -137,31 +151,26 @@ func (mv *MainView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 		return
 	}
 
-	// mv.menu, err = utils.GetUIObject[*gtk.MenuButton](builder, "menu")
-	// if err != nil {
-	//	return
-	// }
-
 	mv.search, err = utils.GetUIObject[*gtk.Button](builder, "search")
 	if err != nil {
 		return
 	}
 
-	/*	mv.orderItems = make(map[int]*gtk.RadioMenuItem)
-		for i := 0; i < 8; i++ {
-			mv.orderItems[i], err = utils.GetUIObject[*gtk.RadioMenuItem](builder, "order"+strconv.Itoa(i))
-			if err != nil {
-				return
-			}
+	mv.sortItems = make(map[int]*gtk.CheckButton)
+	for i := 0; i < 8; i++ {
+		mv.sortItems[i], err = utils.GetUIObject[*gtk.CheckButton](builder, "sort"+strconv.Itoa(i))
+		if err != nil {
+			return
 		}
+	}
 
-		mv.filterItems = make(map[int]*gtk.RadioMenuItem)
-		for i := 0; i < 3; i++ {
-			mv.filterItems[i], err = utils.GetUIObject[*gtk.RadioMenuItem](builder, "filter"+strconv.Itoa(i))
-			if err != nil {
-				return
-			}
-		}*/
+	mv.filterItems = make(map[int]*adw.ActionRow)
+	for i := 0; i < 3; i++ {
+		mv.filterItems[i], err = utils.GetUIObject[*adw.ActionRow](builder, "filter"+strconv.Itoa(i))
+		if err != nil {
+			return
+		}
+	}
 
 	return
 }
@@ -173,18 +182,11 @@ func (mv *MainView) OpenComments(postID int64) {
 		log.Println(err)
 	}
 	mv.stack.Push(mv.postPage)
-
-	// mv.menu.Hide()
-	mv.search.Hide()
 }
 
 func (mv *MainView) CloseComments() {
 	mv.PostView.Destroy()
 	mv.PostView = nil
-	mv.stack.Pop()
-
-	// mv.menu.Show()
-	mv.search.Show()
 }
 
 func (mv *MainView) onNewPosts() {

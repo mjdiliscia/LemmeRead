@@ -3,6 +3,60 @@
 <interface>
   <!-- interface-name mainWindow.ui -->
   <requires lib="gtk" version="4.0" />
+  <object class="GtkPopover" id="sortMenu">
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkCheckButton" id="sort0">
+            <property name="label" translatable="yes">Active</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort1">
+            <property name="label" translatable="yes">Hot</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort2">
+            <property name="label" translatable="yes">Scaled</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort3">
+            <property name="label" translatable="yes">Controversial</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort4">
+            <property name="label" translatable="yes">New</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort5">
+            <property name="label" translatable="yes">Old</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort6">
+            <property name="label" translatable="yes">Most Comments</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort7">
+            <property name="label" translatable="yes">New Comments</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="AdwApplicationWindow" id="window">
     <property name="height-request">600</property>
     <property name="width-request">620</property>
@@ -19,7 +73,7 @@
         <property name="show-content">1</property>
         <property name="sidebar">
           <object class="AdwNavigationPage">
-            <property name="title" translatable="yes">Sidebar</property>
+            <property name="title" translatable="yes">LemmeRead</property>
             <property name="tag">sidebar</property>
             <property name="child">
               <object class="AdwToolbarView">
@@ -27,7 +81,39 @@
                   <object class="AdwHeaderBar" />
                 </child>
                 <property name="content">
-                  <object class="AdwBin" />
+                  <object class="GtkListBox">
+                    <property name="css-classes">navigation-sidebar</property>
+                    <child>
+                      <object class="AdwActionRow" id="filter0">
+                        <property name="title" translatable="yes">Subscribed</property>
+                        <child type="prefix">
+                          <object class="GtkImage">
+                            <property name="icon-name">view-pin-symbolic</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow" id="filter1">
+                        <property name="title" translatable="yes">Local</property>
+                        <child type="prefix">
+                          <object class="GtkImage">
+                            <property name="icon-name">go-home-symbolic</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow" id="filter2">
+                        <property name="title" translatable="yes">All</property>
+                        <child type="prefix">
+                          <object class="GtkImage">
+                            <property name="icon-name">org.gnome.Epiphany-symbolic</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
                 </property>
               </object>
             </property>
@@ -39,13 +125,20 @@
               <object class="AdwNavigationView" id="stack">
                 <child>
                   <object class="AdwNavigationPage" id="postListPage">
-                    <property name="title" translatable="yes">Content</property>
+                    <property name="title" translatable="yes">Undefined</property>
                     <property name="tag">postList</property>
                     <property name="child">
                       <object class="AdwToolbarView">
                         <child type="top">
                           <object class="AdwHeaderBar">
                             <property name="show-back-button">0</property>
+                            <child>
+                              <object class="GtkMenuButton" id="sort">
+                                <property name="icon-name">view-sort-descending-symbolic</property>
+                                <property name="direction">down</property>
+                                <property name="popover">sortMenu</property>
+                              </object>
+                            </child>
                             <child>
                               <object class="GtkButton" id="search">
                                 <property name="focusable">1</property>
