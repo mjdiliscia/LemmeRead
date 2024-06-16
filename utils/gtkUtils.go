@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/diamondburned/gotk4/pkg/core/glib"
+	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 	"github.com/diamondburned/gotk4/pkg/gdkpixbuf/v2"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/mjdiliscia/LemmeRead/data"
@@ -33,17 +34,20 @@ func SetDirectImage(image *gtk.Image, pixbuf *gdkpixbuf.Pixbuf, maxSize [2]int, 
 		return
 	}
 
-	imageWidth := float64(pixbuf.Width())
-	imageWidthScale := imageWidth / float64(maxSize[0])
-	imageHeight := float64(pixbuf.Height())
-	imageHeightScale := imageHeight / float64(maxSize[1])
+	if maxSize[0] != 0 && maxSize[1] != 0 {
+		imageWidth := float64(pixbuf.Width())
+		imageWidthScale := imageWidth / float64(maxSize[0])
+		imageHeight := float64(pixbuf.Height())
+		imageHeightScale := imageHeight / float64(maxSize[1])
 
-	if imageWidthScale > 1.0 || imageHeightScale > 1.0 {
-		scale := math.Max(imageWidthScale, imageHeightScale)
-		pixbuf = pixbuf.ScaleSimple(int(imageWidth/scale), int(imageHeight/scale), gdkpixbuf.InterpHyper)
+		if imageWidthScale > 1.0 || imageHeightScale > 1.0 {
+			scale := math.Max(imageWidthScale, imageHeightScale)
+			pixbuf = pixbuf.ScaleSimple(int(imageWidth/scale), int(imageHeight/scale), gdkpixbuf.InterpHyper)
+		}
 	}
 
-	image.SetFromPixbuf(pixbuf)
+	texture := gdk.NewTextureForPixbuf(pixbuf)
+	image.SetFromPaintable(texture)
 	image.Show()
 }
 

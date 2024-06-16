@@ -18,7 +18,7 @@ func (pc *PostsController) Init(mv *view.MainView, am *model.AppModel) {
 
 	mv.PostListBottomReached = pc.onPostListBottomReached
 	mv.PostListView.CommentClicked = pc.onCommentsClicked
-	mv.CloseCommentsClicked = pc.onCloseCommentsClicked
+	mv.CommentsClosed = pc.onCloseCommentsClicked
 	mv.OrderChanged = pc.onOrderChanged
 	mv.FilterChanged = pc.onFilterChanged
 }

@@ -40,6 +40,15 @@ func LoadPixmapFromUrl(url string) (pixbuf *gdkpixbuf.Pixbuf, err error) {
 		loader = gdkpixbuf.NewPixbufLoader()
 
 		err = loader.Write(data)
+		if err != nil {
+			return
+		}
+
+		err = loader.Close()
+		if err != nil {
+			return
+		}
+
 		pixbuf = loader.Pixbuf()
 		log.Printf("GET time for '%s': %d", url, time.Now().Sub(timestamp).Milliseconds())
 

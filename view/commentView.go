@@ -131,7 +131,7 @@ func (cv *CommentView) fillCommentData(comment model.CommentModel) {
 		taskSequence.Add(func() (*gdkpixbuf.Pixbuf, error) {
 			return utils.LoadPixmapFromUrl(comment.Creator.Avatar.ValueOrZero())
 		}, func(pixbuf *gdkpixbuf.Pixbuf, err error) bool {
-			utils.SetDirectImage(cv.userImage, pixbuf, [2]int{communityIconSize, communityIconSize}, err)
+			utils.SetDirectImage(cv.userImage, pixbuf, [2]int{0, 0}, err)
 			return true
 		})
 	}

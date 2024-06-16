@@ -173,7 +173,7 @@ func (pv *PostView) fillPostData(post model.PostModel, briefDesc bool) {
 	}
 
 	if post.CommunityIcon != nil {
-		utils.SetDirectImage(pv.communityIcon, post.CommunityIcon, [2]int{communityIconSize, communityIconSize}, nil)
+		utils.SetDirectImage(pv.communityIcon, post.CommunityIcon, [2]int{0, 0}, nil)
 	}
 }
 

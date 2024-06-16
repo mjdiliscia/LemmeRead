@@ -12,9 +12,8 @@ import (
 )
 
 const (
-	applicationTitle  = "Lemme Read"
-	maxPostImageSize  = 580
-	communityIconSize = 30
+	applicationTitle = "Lemme Read"
+	maxPostImageSize = 580
 )
 
 type MainView struct {
@@ -23,7 +22,7 @@ type MainView struct {
 	PostListView          PostListView
 	PostView              *PostView
 	PostListBottomReached func()
-	CloseCommentsClicked  func()
+	CommentsClosed        func()
 	OrderChanged          func(int)
 	FilterChanged         func(int)
 
@@ -57,6 +56,13 @@ func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
 		if position == gtk.PosBottom && mv.PostListBottomReached != nil {
 			mv.PostListBottomReached()
 		}
+	})
+
+	mv.stack.Connect("popped", func() {
+		if mv.CommentsClosed != nil {
+			mv.CommentsClosed()
+		}
+
 	})
 
 	mv.setupSort()
