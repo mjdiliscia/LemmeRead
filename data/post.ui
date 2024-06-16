@@ -11,7 +11,7 @@
         <child>
           <object class="AdwClamp" id="card">
             <property name="css-classes">card</property>
-            <property name="vexpand">1</property>
+            <property name="vexpand">False</property>
             <property name="visible">True</property>
             <property name="maximum_size">600</property>
             <property name="tightening_threshold">600</property>
@@ -119,6 +119,7 @@
         </child>
         <child>
           <object class="GtkBox" id="commentsParent">
+            <property name="margin-top">5</property>
             <property name="orientation">vertical</property>
             <property name="vexpand">1</property>
           </object>

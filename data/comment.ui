@@ -6,6 +6,7 @@
   <object class="GtkWindow">
     <property name="child">
       <object class="GtkBox" id="commentBox">
+        <property name="margin-top">10</property>
         <property name="orientation">vertical</property>
         <property name="spacing">3</property>
         <child>
@@ -63,6 +64,7 @@
         </child>
         <child>
           <object class="GtkBox">
+            <property name="margin-bottom">5</property>
             <child>
               <object class="GtkSpinButton" id="votes">
                 <property name="focusable">1</property>
