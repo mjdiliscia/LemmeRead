@@ -2,7 +2,7 @@
 Version=1.0
 Type=Application
 
-Name=LemmeRead
+Name=Lemme Read
 Comment=Gnome application to read posts and comments from the lemmy network.
 Categories=Network;Feed;
 

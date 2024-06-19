@@ -73,7 +73,7 @@
         <property name="show-content">1</property>
         <property name="sidebar">
           <object class="AdwNavigationPage">
-            <property name="title" translatable="yes">LemmeRead</property>
+            <property name="title" translatable="yes">Lemme Read</property>
             <property name="tag">sidebar</property>
             <property name="child">
               <object class="AdwToolbarView">
