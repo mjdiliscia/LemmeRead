@@ -81,34 +81,60 @@
                   <object class="AdwHeaderBar" />
                 </child>
                 <property name="content">
-                  <object class="GtkListBox">
-                    <property name="css-classes">navigation-sidebar</property>
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="AdwActionRow" id="filter0">
-                        <property name="title" translatable="yes">Subscribed</property>
-                        <child type="prefix">
-                          <object class="GtkImage">
-                            <property name="icon-name">view-pin-symbolic</property>
+                      <object class="GtkListBox">
+                        <property name="css-classes">navigation-sidebar</property>
+                        <child>
+                          <object class="AdwActionRow" id="filter0">
+                            <property name="title" translatable="yes">Subscribed</property>
+                            <child type="prefix">
+                              <object class="GtkImage">
+                                <property name="icon-name">view-pin-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwActionRow" id="filter1">
+                            <property name="title" translatable="yes">Local</property>
+                            <child type="prefix">
+                              <object class="GtkImage">
+                                <property name="icon-name">go-home-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwActionRow" id="filter2">
+                            <property name="title" translatable="yes">All</property>
+                            <child type="prefix">
+                              <object class="GtkImage">
+                                <property name="icon-name">org.gnome.Epiphany-symbolic</property>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
                     </child>
                     <child>
-                      <object class="AdwActionRow" id="filter1">
-                        <property name="title" translatable="yes">Local</property>
-                        <child type="prefix">
-                          <object class="GtkImage">
-                            <property name="icon-name">go-home-symbolic</property>
-                          </object>
-                        </child>
+                      <object class="GtkSeparator">
+                        <property name="css-classes">spacer</property>
+                        <property name="orientation">horizontal</property>
                       </object>
                     </child>
                     <child>
-                      <object class="AdwActionRow" id="filter2">
-                        <property name="title" translatable="yes">All</property>
-                        <child type="prefix">
-                          <object class="GtkImage">
-                            <property name="icon-name">org.gnome.Epiphany-symbolic</property>
+                      <object class="GtkListBox">
+                        <property name="css-classes">navigation-sidebar</property>
+                        <child>
+                          <object class="AdwActionRow" id="communities">
+                            <property name="title" translatable="yes">Communities</property>
+                            <child type="prefix">
+                              <object class="GtkImage">
+                                <property name="icon-name">system-users-symbolic</property>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
