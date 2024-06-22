@@ -4,127 +4,123 @@
   <!-- interface-name post.ui -->
   <requires lib="gtk" version="4.0" />
   <requires lib="libadwaita" version="1.0" />
-  <object class="GtkWindow">
-    <property name="child">
-      <object class="GtkBox" id="post">
-        <property name="orientation">vertical</property>
+  <object class="GtkBox" id="post">
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="AdwClamp" id="card">
+        <property name="css-classes">card</property>
+        <property name="vexpand">False</property>
+        <property name="visible">True</property>
+        <property name="maximum_size">600</property>
+        <property name="tightening_threshold">600</property>
         <child>
-          <object class="AdwClamp" id="card">
-            <property name="css-classes">card</property>
-            <property name="vexpand">False</property>
-            <property name="visible">True</property>
-            <property name="maximum_size">600</property>
-            <property name="tightening_threshold">600</property>
+          <object class="GtkBox">
+            <property name="margin-top">10</property>
+            <property name="margin-bottom">10</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">5</property>
+            <child>
+              <object class="GtkLabel" id="title">
+                <property name="label" translatable="yes">Title of post</property>
+                <property name="max-width-chars">1</property>
+                <property name="name">postTitle</property>
+                <property name="wrap">1</property>
+                <property name="xalign">0</property>
+                <property name="css-classes">title-1</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox" id="subtitle">
+                <property name="spacing">10</property>
+                <child>
+                  <object class="GtkImage" id="communityIcon">
+                    <property name="icon-size">large</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="communityName">
+                    <property name="label" translatable="yes">Community name</property>
+                    <property name="css-classes">title-4</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="username">
+                    <property name="label" translatable="yes">Username</property>
+                    <property name="css-classes">accent</property>
+                    <property name="vexpand">True</property>
+                    <property name="valign">0</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparator">
+                    <property name="css-classes">spacer</property>
+                    <property name="hexpand">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLinkButton" id="linkButton">
+                    <property name="label" translatable="yes">Link</property>
+                    <property name="visible">0</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="time">
+                    <property name="label" translatable="yes">Time</property>
+                    <property name="css-classes">content</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkPicture" id="image">
+                <property name="can-shrink">false</property>
+                <property name="content-fit">contain</property>
+                <property name="halign">center</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="description">
+                <property name="max-width-chars">1</property>
+                <property name="selectable">1</property>
+                <property name="use-markup">1</property>
+                <property name="wrap">1</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="content" />
+                </style>
+              </object>
+            </child>
             <child>
               <object class="GtkBox">
-                <property name="margin-top">10</property>
-                <property name="margin-bottom">10</property>
-                <property name="margin-start">10</property>
-                <property name="margin-end">10</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">5</property>
                 <child>
-                  <object class="GtkLabel" id="title">
-                    <property name="label" translatable="yes">Title of post</property>
-                    <property name="max-width-chars">1</property>
-                    <property name="name">postTitle</property>
-                    <property name="wrap">1</property>
-                    <property name="xalign">0</property>
-                    <property name="css-classes">title-1</property>
+                  <object class="GtkSpinButton" id="votes">
+                    <property name="focusable">1</property>
+                    <property name="numeric">1</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkBox" id="subtitle">
-                    <property name="spacing">10</property>
-                    <child>
-                      <object class="GtkImage" id="communityIcon">
-                        <property name="icon-size">large</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="communityName">
-                        <property name="label" translatable="yes">Community name</property>
-                        <property name="css-classes">title-4</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="username">
-                        <property name="label" translatable="yes">Username</property>
-                        <property name="css-classes">accent</property>
-                        <property name="vexpand">True</property>
-                        <property name="valign">0</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparator">
-                        <property name="css-classes">spacer</property>
-                        <property name="hexpand">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLinkButton" id="linkButton">
-                        <property name="label" translatable="yes">Link</property>
-                        <property name="visible">0</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="time">
-                        <property name="label" translatable="yes">Time</property>
-                        <property name="css-classes">content</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkPicture" id="image">
-                    <property name="can-shrink">false</property>
-                    <property name="content-fit">contain</property>
-                    <property name="halign">center</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="description">
-                    <property name="max-width-chars">1</property>
-                    <property name="selectable">1</property>
-                    <property name="use-markup">1</property>
-                    <property name="wrap">1</property>
-                    <property name="xalign">0</property>
-                    <style>
-                      <class name="content" />
-                    </style>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <child>
-                      <object class="GtkSpinButton" id="votes">
-                        <property name="focusable">1</property>
-                        <property name="numeric">1</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="commentsButton">
-                        <property name="focusable">1</property>
-                        <property name="label" translatable="yes">comments</property>
-                        <property name="receives-default">1</property>
-                        <property name="halign">end</property>
-                        <property name="hexpand">True</property>
-                      </object>
-                    </child>
+                  <object class="GtkButton" id="commentsButton">
+                    <property name="focusable">1</property>
+                    <property name="label" translatable="yes">comments</property>
+                    <property name="receives-default">1</property>
+                    <property name="halign">end</property>
+                    <property name="hexpand">True</property>
                   </object>
                 </child>
               </object>
             </child>
           </object>
         </child>
-        <child>
-          <object class="GtkBox" id="commentsParent">
-            <property name="margin-top">5</property>
-            <property name="orientation">vertical</property>
-            <property name="vexpand">1</property>
-          </object>
-        </child>
       </object>
-    </property>
+    </child>
+    <child>
+      <object class="GtkBox" id="commentsParent">
+        <property name="margin-top">5</property>
+        <property name="orientation">vertical</property>
+        <property name="vexpand">1</property>
+      </object>
+    </child>
   </object>
 </interface>

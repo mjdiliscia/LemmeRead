@@ -126,8 +126,6 @@ func (pv *PostView) buildAndSetReferences() (builder *gtk.Builder, err error) {
 		return
 	}
 
-	pv.post.Unparent()
-
 	return
 }
 

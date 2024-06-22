@@ -107,7 +107,6 @@ func (cv *CommentView) buildAndSetReferences() (commentBox *gtk.Box, err error) 
 	if err != nil {
 		return
 	}
-	cv.CommentBox.Unparent()
 
 	return
 }
