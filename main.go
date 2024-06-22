@@ -11,5 +11,5 @@ func main() {
 		log.Panic(err)
 	}
 
-	app.GtkApplication.Run(os.Args)
+	app.AdwApplication.Run(os.Args)
 }

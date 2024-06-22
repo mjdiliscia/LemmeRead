@@ -3,8 +3,8 @@ package view
 import (
 	"time"
 
-	"github.com/gotk3/gotk3/gdk"
-	"github.com/gotk3/gotk3/gtk"
+	"github.com/diamondburned/gotk4/pkg/gdkpixbuf/v2"
+	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/mjdiliscia/LemmeRead/data"
 	"github.com/mjdiliscia/LemmeRead/model"
 	"github.com/mjdiliscia/LemmeRead/utils"
@@ -37,51 +37,47 @@ func NewCommentView(comment model.CommentModel) (cv CommentView, err error) {
 }
 
 func (cv *CommentView) AddChildComment(commentView CommentView) {
-	cv.childCommentsBox.PackStart(commentView.CommentBox, true, false, 0)
+	cv.childCommentsBox.Append(commentView.CommentBox)
 }
 
 func (cv *CommentView) buildAndSetReferences() (commentBox *gtk.Box, err error) {
-	builder, err := gtk.BuilderNewFromString(string(data.CommentUI))
+	builder := gtk.NewBuilderFromString(string(data.CommentUI), -1)
 
-	if err != nil {
-		return
-	}
-
-	cv.username, err = utils.GetUIObject[gtk.Label](builder, "username")
+	cv.username, err = utils.GetUIObject[*gtk.Label](builder, "username")
 	if err != nil {
 		return
 	}
 	utils.ApplyStyle(&cv.username.Widget)
 
-	cv.timestamp, err = utils.GetUIObject[gtk.Label](builder, "timestamp")
+	cv.timestamp, err = utils.GetUIObject[*gtk.Label](builder, "timestamp")
 	if err != nil {
 		return
 	}
 	utils.ApplyStyle(&cv.timestamp.Widget)
 
-	cv.commentText, err = utils.GetUIObject[gtk.Label](builder, "commentText")
+	cv.commentText, err = utils.GetUIObject[*gtk.Label](builder, "commentText")
 	if err != nil {
 		return
 	}
 	utils.ApplyStyle(&cv.commentText.Widget)
 
-	cv.votes, err = utils.GetUIObject[gtk.SpinButton](builder, "votes")
+	cv.votes, err = utils.GetUIObject[*gtk.SpinButton](builder, "votes")
 	if err != nil {
 		return
 	}
 	cv.votes.SetIncrements(1, 1)
 	cv.votes.Connect("value-changed", func() {
 		if cv.VotesChanged != nil {
-			cv.VotesChanged(cv.commentID, int64(cv.votes.GetValue()))
+			cv.VotesChanged(cv.commentID, int64(cv.votes.Value()))
 		}
 	})
 
-	cv.userImage, err = utils.GetUIObject[gtk.Image](builder, "userImage")
+	cv.userImage, err = utils.GetUIObject[*gtk.Image](builder, "userImage")
 	if err != nil {
 		return
 	}
 
-	cv.foldButton, err = utils.GetUIObject[gtk.Button](builder, "fold")
+	cv.foldButton, err = utils.GetUIObject[*gtk.Button](builder, "fold")
 	if err != nil {
 		return
 	}
@@ -93,7 +89,7 @@ func (cv *CommentView) buildAndSetReferences() (commentBox *gtk.Box, err error) 
 		cv.childCommentsBox.Hide()
 	})
 
-	cv.unfoldButton, err = utils.GetUIObject[gtk.Button](builder, "unfold")
+	cv.unfoldButton, err = utils.GetUIObject[*gtk.Button](builder, "unfold")
 	if err != nil {
 		return
 	}
@@ -105,9 +101,9 @@ func (cv *CommentView) buildAndSetReferences() (commentBox *gtk.Box, err error) 
 		cv.childCommentsBox.Show()
 	})
 
-	cv.childCommentsBox, err = utils.GetUIObject[gtk.Box](builder, "children")
+	cv.childCommentsBox, err = utils.GetUIObject[*gtk.Box](builder, "children")
 
-	cv.CommentBox, err = utils.GetUIObject[gtk.Box](builder, "commentBox")
+	cv.CommentBox, err = utils.GetUIObject[*gtk.Box](builder, "commentBox")
 	if err != nil {
 		return
 	}
@@ -127,15 +123,15 @@ func (cv *CommentView) fillCommentData(comment model.CommentModel) {
 	cv.votes.SetValue(float64(comment.Counts.Score))
 
 	if comment.Creator.Avatar.IsValid() {
-		var taskSequence *utils.TaskSequence[*gdk.Pixbuf]
-		taskSequence = utils.NewTaskSequence[*gdk.Pixbuf](func() {
+		var taskSequence *utils.TaskSequence[*gdkpixbuf.Pixbuf]
+		taskSequence = utils.NewTaskSequence[*gdkpixbuf.Pixbuf](func() {
 			taskSequence = nil
 		})
 
-		taskSequence.Add(func() (*gdk.Pixbuf, error) {
+		taskSequence.Add(func() (*gdkpixbuf.Pixbuf, error) {
 			return utils.LoadPixmapFromUrl(comment.Creator.Avatar.ValueOrZero())
-		}, func(pixbuf *gdk.Pixbuf, err error) bool {
-			utils.SetDirectImage(cv.userImage, pixbuf, [2]int{communityIconSize, communityIconSize}, err)
+		}, func(pixbuf *gdkpixbuf.Pixbuf, err error) bool {
+			utils.SetDirectImage(cv.userImage, pixbuf, [2]int{0, 0}, err)
 			return true
 		})
 	}

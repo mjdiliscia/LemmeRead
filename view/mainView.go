@@ -4,38 +4,39 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/gotk3/gotk3/gtk"
+	"github.com/diamondburned/gotk4-adwaita/pkg/adw"
+	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/mjdiliscia/LemmeRead/data"
 	"github.com/mjdiliscia/LemmeRead/model"
 	"github.com/mjdiliscia/LemmeRead/utils"
 )
 
 const (
-	applicationTitle  = "Lemme Read"
-	maxPostImageSize  = 580
-	communityIconSize = 30
+	applicationTitle = "Lemme Read"
+	maxPostImageSize = 580
 )
 
 type MainView struct {
-	Window                *gtk.ApplicationWindow
+	Window                *adw.ApplicationWindow
 	Model                 *model.AppModel
 	PostListView          PostListView
 	PostView              *PostView
 	PostListBottomReached func()
-	CloseCommentsClicked  func()
+	CommentsClosed        func()
 	OrderChanged          func(int)
 	FilterChanged         func(int)
 
-	stack          *gtk.Stack
+	stack          *adw.NavigationView
+	postListPage   *adw.NavigationPage
 	postListBox    *gtk.Box
 	postListScroll *gtk.ScrolledWindow
+	postPage       *adw.NavigationPage
 	postBox        *gtk.Box
 	postScroll     *gtk.ScrolledWindow
-	closeComments  *gtk.Button
 	search         *gtk.Button
-	menu           *gtk.MenuButton
-	orderItems     map[int]*gtk.RadioMenuItem
-	filterItems    map[int]*gtk.RadioMenuItem
+	sortButton     *gtk.MenuButton
+	sortItems      map[int]*gtk.CheckButton
+	filterItems    map[int]*adw.ActionRow
 }
 
 func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
@@ -53,42 +54,60 @@ func (mv *MainView) SetupMainView(appModel *model.AppModel) (err error) {
 	}
 
 	mv.postListScroll.Connect("edge-reached", func(scroll *gtk.ScrolledWindow, position gtk.PositionType) {
-		if position == gtk.POS_BOTTOM && mv.PostListBottomReached != nil {
+		if position == gtk.PosBottom && mv.PostListBottomReached != nil {
 			mv.PostListBottomReached()
 		}
 	})
 
-	mv.closeComments.Connect("clicked", func() {
-		if mv.CloseCommentsClicked != nil {
-			mv.CloseCommentsClicked()
+	mv.stack.Connect("popped", func() {
+		if mv.CommentsClosed != nil {
+			mv.CommentsClosed()
 		}
+
 	})
 
-	for index, orderItem := range mv.orderItems {
-		orderItem.SetActive(index == int(mv.Model.Configuration.GetOrder()))
-
-		idx, item := index, orderItem
-		orderItem.Connect("activate", func() {
-			if item.GetActive() && mv.OrderChanged != nil {
-				mv.OrderChanged(idx)
-			}
-		})
-	}
-
-	for index, filterItem := range mv.filterItems {
-		filterItem.SetActive(index == int(mv.Model.Configuration.GetFilter()))
-
-		idx, item := index, filterItem
-		filterItem.Connect("activate", func() {
-			if item.GetActive() && mv.FilterChanged != nil {
-				mv.FilterChanged(idx)
-			}
-		})
-	}
+	mv.setupSort()
+	mv.setupFilter()
 
 	mv.Window.Show()
 
 	return nil
+}
+
+func (mv *MainView) setupSort() {
+	for index, sortItem := range mv.sortItems {
+		sortItem.SetActive(index == int(mv.Model.Configuration.GetOrder()))
+
+		idx, item := index, sortItem
+		sortItem.Connect("toggled", func() {
+			if item.Active() {
+				mv.sortButton.Popdown()
+				if mv.OrderChanged != nil {
+					mv.OrderChanged(idx)
+				}
+			}
+		})
+	}
+}
+
+func (mv *MainView) setupFilter() {
+	selectedFilter := int(mv.Model.Configuration.GetFilter())
+	filterItem := mv.filterItems[selectedFilter]
+	listBox := filterItem.Parent().(*gtk.ListBox)
+	listBox.Connect("row-selected", func(self *gtk.ListBox, row *gtk.ListBoxRow) {
+		item := row.Cast().(*adw.ActionRow)
+		mv.postListPage.SetTitle(item.Title())
+		if mv.FilterChanged != nil {
+			var itemId int
+			for id, filter := range mv.filterItems {
+				if filter.Title() == item.Title() {
+					itemId = id
+				}
+			}
+			mv.FilterChanged(itemId)
+		}
+	})
+	listBox.SelectRow(&filterItem.ListBoxRow)
 }
 
 func (mv *MainView) CleanView() {
@@ -96,67 +115,73 @@ func (mv *MainView) CleanView() {
 }
 
 func (mv *MainView) buildAndSetReferences() (builder *gtk.Builder, err error) {
-	builder, err = gtk.BuilderNewFromString(string(data.MainWindowUI))
+	builder = gtk.NewBuilderFromString(string(data.MainWindowUI), -1)
+
+	mv.Window, err = utils.GetUIObject[*adw.ApplicationWindow](builder, "window")
 	if err != nil {
 		return
 	}
 
-	mv.Window, err = utils.GetUIObject[gtk.ApplicationWindow](builder, "window")
+	mv.stack, err = utils.GetUIObject[*adw.NavigationView](builder, "stack")
 	if err != nil {
 		return
 	}
 
-	mv.stack, err = utils.GetUIObject[gtk.Stack](builder, "stack")
+	mv.postListPage, err = utils.GetUIObject[*adw.NavigationPage](builder, "postListPage")
 	if err != nil {
 		return
 	}
 
-	mv.postListBox, err = utils.GetUIObject[gtk.Box](builder, "postListBox")
+	mv.postListBox, err = utils.GetUIObject[*gtk.Box](builder, "postListBox")
 	if err != nil {
 		return
 	}
 
-	mv.postListScroll, err = utils.GetUIObject[gtk.ScrolledWindow](builder, "postListScroll")
+	mv.postListScroll, err = utils.GetUIObject[*gtk.ScrolledWindow](builder, "postListScroll")
 	if err != nil {
 		return
 	}
 
-	mv.postBox, err = utils.GetUIObject[gtk.Box](builder, "postBox")
+	mv.postPage, err = utils.GetUIObject[*adw.NavigationPage](builder, "postPage")
 	if err != nil {
 		return
 	}
 
-	mv.postScroll, err = utils.GetUIObject[gtk.ScrolledWindow](builder, "postScroll")
+	mv.postBox, err = utils.GetUIObject[*gtk.Box](builder, "postBox")
 	if err != nil {
 		return
 	}
 
-	mv.closeComments, err = utils.GetUIObject[gtk.Button](builder, "closeComments")
+	mv.postScroll, err = utils.GetUIObject[*gtk.ScrolledWindow](builder, "postScroll")
 	if err != nil {
 		return
 	}
 
-	mv.menu, err = utils.GetUIObject[gtk.MenuButton](builder, "menu")
 	if err != nil {
 		return
 	}
 
-	mv.search, err = utils.GetUIObject[gtk.Button](builder, "search")
+	mv.search, err = utils.GetUIObject[*gtk.Button](builder, "search")
 	if err != nil {
 		return
 	}
 
-	mv.orderItems = make(map[int]*gtk.RadioMenuItem)
+	mv.sortButton, err = utils.GetUIObject[*gtk.MenuButton](builder, "sort")
+	if err != nil {
+		return
+	}
+
+	mv.sortItems = make(map[int]*gtk.CheckButton)
 	for i := 0; i < 8; i++ {
-		mv.orderItems[i], err = utils.GetUIObject[gtk.RadioMenuItem](builder, "order"+strconv.Itoa(i))
+		mv.sortItems[i], err = utils.GetUIObject[*gtk.CheckButton](builder, "sort"+strconv.Itoa(i))
 		if err != nil {
 			return
 		}
 	}
 
-	mv.filterItems = make(map[int]*gtk.RadioMenuItem)
+	mv.filterItems = make(map[int]*adw.ActionRow)
 	for i := 0; i < 3; i++ {
-		mv.filterItems[i], err = utils.GetUIObject[gtk.RadioMenuItem](builder, "filter"+strconv.Itoa(i))
+		mv.filterItems[i], err = utils.GetUIObject[*adw.ActionRow](builder, "filter"+strconv.Itoa(i))
 		if err != nil {
 			return
 		}
@@ -171,23 +196,12 @@ func (mv *MainView) OpenComments(postID int64) {
 	if err != nil {
 		log.Println(err)
 	}
-	mv.stack.SetTransitionType(gtk.STACK_TRANSITION_TYPE_SLIDE_LEFT)
-	mv.stack.SetVisibleChild(&mv.postScroll.Container)
-
-	mv.closeComments.Show()
-	mv.menu.Hide()
-	mv.search.Hide()
+	mv.stack.Push(mv.postPage)
 }
 
 func (mv *MainView) CloseComments() {
 	mv.PostView.Destroy()
 	mv.PostView = nil
-	mv.stack.SetTransitionType(gtk.STACK_TRANSITION_TYPE_SLIDE_RIGHT)
-	mv.stack.SetVisibleChild(&mv.postListScroll.Container)
-
-	mv.closeComments.Hide()
-	mv.menu.Show()
-	mv.search.Show()
 }
 
 func (mv *MainView) onNewPosts() {

@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/gotk3/gotk3/glib"
+	"github.com/diamondburned/gotk4/pkg/glib/v2"
 )
 
 type AppModelConfiguration struct {

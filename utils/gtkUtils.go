@@ -8,18 +8,20 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/gotk3/gotk3/gdk"
-	"github.com/gotk3/gotk3/gtk"
+	"github.com/diamondburned/gotk4/pkg/core/glib"
+	"github.com/diamondburned/gotk4/pkg/gdk/v4"
+	"github.com/diamondburned/gotk4/pkg/gdkpixbuf/v2"
+	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/mjdiliscia/LemmeRead/data"
 )
 
-func GetUIObject[OType any](builder *gtk.Builder, objectId string) (object *OType, err error) {
-	obj, err := builder.GetObject(objectId)
-	if err != nil {
+func GetUIObject[OType glib.Objector](builder *gtk.Builder, objectId string) (object OType, err error) {
+	obj := builder.GetObject(objectId)
+	if obj == nil {
 		err = fmt.Errorf("Couldn't find object of name '%s' (asked type was %s): %s", objectId, reflect.TypeOf(object).Name(), err)
 		return
 	}
-	object, ok := any(obj).(*OType)
+	object, ok := obj.Cast().(OType)
 	if ok {
 		return object, nil
 	} else {
@@ -27,31 +29,34 @@ func GetUIObject[OType any](builder *gtk.Builder, objectId string) (object *OTyp
 	}
 }
 
-func SetDirectImage(image *gtk.Image, pixbuf *gdk.Pixbuf, maxSize [2]int, err error) {
+func SetDirectImage(image *gtk.Image, pixbuf *gdkpixbuf.Pixbuf, maxSize [2]int, err error) {
 	if err != nil {
 		return
 	}
 
-	imageWidth := float64(pixbuf.GetWidth())
-	imageWidthScale := imageWidth / float64(maxSize[0])
-	imageHeight := float64(pixbuf.GetHeight())
-	imageHeightScale := imageHeight / float64(maxSize[1])
+	if maxSize[0] != 0 && maxSize[1] != 0 {
+		imageWidth := float64(pixbuf.Width())
+		imageWidthScale := imageWidth / float64(maxSize[0])
+		imageHeight := float64(pixbuf.Height())
+		imageHeightScale := imageHeight / float64(maxSize[1])
 
-	if imageWidthScale > 1.0 || imageHeightScale > 1.0 {
-		scale := math.Max(imageWidthScale, imageHeightScale)
-		pixbuf, _ = pixbuf.ScaleSimple(int(imageWidth/scale), int(imageHeight/scale), gdk.INTERP_HYPER)
+		if imageWidthScale > 1.0 || imageHeightScale > 1.0 {
+			scale := math.Max(imageWidthScale, imageHeightScale)
+			pixbuf = pixbuf.ScaleSimple(int(imageWidth/scale), int(imageHeight/scale), gdkpixbuf.InterpHyper)
+		}
 	}
 
-	image.SetFromPixbuf(pixbuf)
+	texture := gdk.NewTextureForPixbuf(pixbuf)
+	image.SetFromPaintable(texture)
 	image.Show()
 }
 
-func SetImage(builder *gtk.Builder, pixbuf *gdk.Pixbuf, imageId string, maxSize [2]int, err error) {
+func SetImage(builder *gtk.Builder, pixbuf *gdkpixbuf.Pixbuf, imageId string, maxSize [2]int, err error) {
 	if err != nil {
 		return
 	}
 
-	image, err := GetUIObject[gtk.Image](builder, imageId)
+	image, err := GetUIObject[*gtk.Image](builder, imageId)
 	if err != nil {
 		log.Println(err)
 		return
@@ -60,7 +65,26 @@ func SetImage(builder *gtk.Builder, pixbuf *gdk.Pixbuf, imageId string, maxSize 
 	SetDirectImage(image, pixbuf, maxSize, err)
 }
 
-func SetWidgetProperty[WType any](builder *gtk.Builder, widgetId string, setter func(widget *WType)) (err error) {
+func SetDirectPicture(image *gtk.Picture, pixbuf *gdkpixbuf.Pixbuf, maxSize [2]int, err error) {
+	if err != nil {
+		return
+	}
+
+	imageWidth := float64(pixbuf.Width())
+	imageWidthScale := imageWidth / float64(maxSize[0])
+	imageHeight := float64(pixbuf.Height())
+	imageHeightScale := imageHeight / float64(maxSize[1])
+
+	if imageWidthScale > 1.0 || imageHeightScale > 1.0 {
+		scale := math.Max(imageWidthScale, imageHeightScale)
+		pixbuf = pixbuf.ScaleSimple(int(imageWidth/scale), int(imageHeight/scale), gdkpixbuf.InterpHyper)
+	}
+
+	image.SetPixbuf(pixbuf)
+	image.Show()
+}
+
+func SetWidgetProperty[WType glib.Objector](builder *gtk.Builder, widgetId string, setter func(widget WType)) (err error) {
 	widget, err := GetUIObject[WType](builder, widgetId)
 	if err != nil {
 		return
@@ -70,9 +94,9 @@ func SetWidgetProperty[WType any](builder *gtk.Builder, widgetId string, setter 
 }
 
 func ApplyStyle(widget *gtk.Widget) {
-	cssProvider, _ := gtk.CssProviderNew()
+	cssProvider := gtk.NewCSSProvider()
 	cssProvider.LoadFromData(string(data.StyleCSS))
-	context, _ := widget.GetStyleContext()
+	context := widget.StyleContext()
 	context.AddProvider(cssProvider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 }
 

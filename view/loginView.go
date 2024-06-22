@@ -1,9 +1,7 @@
 package view
 
 import (
-	"log"
-
-	"github.com/gotk3/gotk3/gtk"
+	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/mjdiliscia/LemmeRead/data"
 	"github.com/mjdiliscia/LemmeRead/utils"
 )
@@ -27,25 +25,10 @@ func (lv *LoginView) SetupLoginView() (err error) {
 
 	lv.login.Connect("clicked", func() {
 		if lv.LoginClicked != nil {
-			server, err := lv.server.GetText()
-			if err != nil {
-				log.Panic(err)
-			}
-
-			username, err := lv.username.GetText()
-			if err != nil {
-				log.Panic(err)
-			}
-
-			password, err := lv.password.GetText()
-			if err != nil {
-				log.Panic(err)
-			}
-
-			totp, err := lv.totp.GetText()
-			if err != nil {
-				log.Panic(err)
-			}
+			server := lv.server.Text()
+			username := lv.username.Text()
+			password := lv.password.Text()
+			totp := lv.totp.Text()
 
 			lv.LoginClicked(server, username, password, totp)
 		}
@@ -57,37 +40,34 @@ func (lv *LoginView) SetupLoginView() (err error) {
 }
 
 func (lv *LoginView) buildAndSetReferences() (builder *gtk.Builder, err error) {
-	builder, err = gtk.BuilderNewFromString(string(data.LoginUI))
+	builder = gtk.NewBuilderFromString(string(data.LoginUI), -1)
+
+	lv.Window, err = utils.GetUIObject[*gtk.Dialog](builder, "loginDialog")
 	if err != nil {
 		return
 	}
 
-	lv.Window, err = utils.GetUIObject[gtk.Dialog](builder, "loginDialog")
+	lv.login, err = utils.GetUIObject[*gtk.Button](builder, "login")
 	if err != nil {
 		return
 	}
 
-	lv.login, err = utils.GetUIObject[gtk.Button](builder, "login")
+	lv.server, err = utils.GetUIObject[*gtk.Entry](builder, "serverUrl")
 	if err != nil {
 		return
 	}
 
-	lv.server, err = utils.GetUIObject[gtk.Entry](builder, "serverUrl")
+	lv.username, err = utils.GetUIObject[*gtk.Entry](builder, "username")
 	if err != nil {
 		return
 	}
 
-	lv.username, err = utils.GetUIObject[gtk.Entry](builder, "username")
+	lv.password, err = utils.GetUIObject[*gtk.Entry](builder, "password")
 	if err != nil {
 		return
 	}
 
-	lv.password, err = utils.GetUIObject[gtk.Entry](builder, "password")
-	if err != nil {
-		return
-	}
-
-	lv.totp, err = utils.GetUIObject[gtk.Entry](builder, "totp")
+	lv.totp, err = utils.GetUIObject[*gtk.Entry](builder, "totp")
 	if err != nil {
 		return
 	}

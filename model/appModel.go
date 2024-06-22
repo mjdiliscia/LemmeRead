@@ -6,7 +6,7 @@ import (
 	"log"
 	"slices"
 
-	"github.com/gotk3/gotk3/glib"
+	"github.com/diamondburned/gotk4/pkg/glib/v2"
 	"go.elara.ws/go-lemmy"
 )
 

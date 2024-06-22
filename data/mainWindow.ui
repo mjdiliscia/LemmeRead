@@ -1,0 +1,267 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.90.2 -->
+<interface>
+  <!-- interface-name mainWindow.ui -->
+  <requires lib="gtk" version="4.0" />
+  <object class="GtkPopover" id="sortMenu">
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkCheckButton" id="sort0">
+            <property name="label" translatable="yes">Active</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort1">
+            <property name="label" translatable="yes">Hot</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort2">
+            <property name="label" translatable="yes">Scaled</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort3">
+            <property name="label" translatable="yes">Controversial</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort4">
+            <property name="label" translatable="yes">New</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort5">
+            <property name="label" translatable="yes">Old</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort6">
+            <property name="label" translatable="yes">Most Comments</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="sort7">
+            <property name="label" translatable="yes">New Comments</property>
+            <property name="group">sort0</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="AdwApplicationWindow" id="window">
+    <property name="height-request">300</property>
+    <property name="width-request">620</property>
+    <property name="default-height">900</property>
+    <property name="default-width">825</property>
+    <child>
+      <object class="AdwBreakpoint">
+        <condition>max-width: 820</condition>
+        <setter object="splitView" property="collapsed">True</setter>
+      </object>
+    </child>
+    <property name="content">
+      <object class="AdwNavigationSplitView" id="splitView">
+        <property name="show-content">1</property>
+        <property name="sidebar">
+          <object class="AdwNavigationPage">
+            <property name="title" translatable="yes">Lemme Read</property>
+            <property name="tag">sidebar</property>
+            <property name="child">
+              <object class="AdwToolbarView">
+                <child type="top">
+                  <object class="AdwHeaderBar" />
+                </child>
+                <property name="content">
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Filter</property>
+                        <property name="css-classes">caption-heading</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkListBox">
+                        <property name="css-classes">navigation-sidebar</property>
+                        <child>
+                          <object class="AdwActionRow" id="filter0">
+                            <property name="title" translatable="yes">Subscribed</property>
+                            <child type="prefix">
+                              <object class="GtkImage">
+                                <property name="icon-name">view-pin-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwActionRow" id="filter1">
+                            <property name="title" translatable="yes">Local</property>
+                            <child type="prefix">
+                              <object class="GtkImage">
+                                <property name="icon-name">go-home-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwActionRow" id="filter2">
+                            <property name="title" translatable="yes">All</property>
+                            <child type="prefix">
+                              <object class="GtkImage">
+                                <property name="icon-name">org.gnome.Epiphany-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparator">
+                        <property name="css-classes">spacer</property>
+                        <property name="orientation">horizontal</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Lookup</property>
+                        <property name="css-classes">caption-heading</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkListBox">
+                        <property name="css-classes">navigation-sidebar</property>
+                        <child>
+                          <object class="AdwActionRow" id="posts">
+                            <property name="title" translatable="yes">Posts</property>
+                            <child type="prefix">
+                              <object class="GtkImage">
+                                <property name="icon-name">view-paged-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwActionRow" id="communities">
+                            <property name="title" translatable="yes">Communities</property>
+                            <child type="prefix">
+                              <object class="GtkImage">
+                                <property name="icon-name">system-users-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+              </object>
+            </property>
+          </object>
+        </property>
+        <property name="content">
+          <object class="AdwNavigationPage">
+            <property name="child">
+              <object class="AdwNavigationView" id="stack">
+                <child>
+                  <object class="AdwNavigationPage" id="postListPage">
+                    <property name="title" translatable="yes">Undefined</property>
+                    <property name="tag">postList</property>
+                    <property name="child">
+                      <object class="AdwToolbarView">
+                        <child type="top">
+                          <object class="AdwHeaderBar">
+                            <property name="show-back-button">0</property>
+                            <child>
+                              <object class="GtkMenuButton" id="sort">
+                                <property name="icon-name">view-sort-descending-symbolic</property>
+                                <property name="direction">down</property>
+                                <property name="popover">sortMenu</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="search">
+                                <property name="focusable">1</property>
+                                <property name="receives-default">1</property>
+                                <property name="icon-name">edit-find-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <property name="content">
+                          <object class="GtkScrolledWindow" id="postListScroll">
+                            <property name="child">
+                              <object class="GtkViewport">
+                                <property name="child">
+                                  <object class="AdwClamp">
+                                    <property name="maximum-size">600</property>
+                                    <property name="orientation">horizontal</property>
+                                    <property name="margin-bottom">10</property>
+                                    <property name="margin-top">10</property>
+                                    <property name="child">
+                                      <object class="GtkBox" id="postListBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">10</property>
+                                      </object>
+                                    </property>
+                                  </object>
+                                </property>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwNavigationPage" id="postPage">
+                    <property name="title" translatable="yes">Content</property>
+                    <property name="tag">post</property>
+                    <property name="child">
+                      <object class="AdwToolbarView">
+                        <child type="top">
+                          <object class="AdwHeaderBar" />
+                        </child>
+                        <property name="content">
+                          <object class="GtkScrolledWindow" id="postScroll">
+                            <property name="child">
+                              <object class="GtkViewport">
+                                <property name="child">
+                                  <object class="AdwClampScrollable">
+                                    <property name="maximum-size">600</property>
+                                    <property name="orientation">horizontal</property>
+                                    <property name="margin-bottom">10</property>
+                                    <property name="margin-top">10</property>
+                                    <property name="child">
+                                      <object class="GtkBox" id="postBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">10</property>
+                                      </object>
+                                    </property>
+                                  </object>
+                                </property>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </property>
+      </object>
+    </property>
+  </object>
+</interface>

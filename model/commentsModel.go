@@ -1,12 +1,12 @@
 package model
 
 import (
-	"github.com/gotk3/gotk3/gdk"
+	"github.com/diamondburned/gotk4/pkg/gdkpixbuf/v2"
 	"go.elara.ws/go-lemmy"
 )
 
 type CommentModel struct {
 	lemmy.CommentView
-	UserIcon      gdk.Pixbuf
+	UserIcon      gdkpixbuf.Pixbuf
 	ChildComments []*CommentModel
 }
