@@ -84,6 +84,12 @@
                   <object class="GtkBox">
                     <property name="orientation">vertical</property>
                     <child>
+                      <object class="GtkLabel">
+                        <property name="label">Filter</property>
+                        <property name="css-classes">caption-heading</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkListBox">
                         <property name="css-classes">navigation-sidebar</property>
                         <child>
@@ -125,8 +131,24 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkLabel">
+                        <property name="label">Lookup</property>
+                        <property name="css-classes">caption-heading</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkListBox">
                         <property name="css-classes">navigation-sidebar</property>
+                        <child>
+                          <object class="AdwActionRow" id="posts">
+                            <property name="title" translatable="yes">Posts</property>
+                            <child type="prefix">
+                              <object class="GtkImage">
+                                <property name="icon-name">view-paged-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
                         <child>
                           <object class="AdwActionRow" id="communities">
                             <property name="title" translatable="yes">Communities</property>
